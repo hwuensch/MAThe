@@ -12,7 +12,9 @@ int main(int argc,char *argv[])
   int iterAll, iterJ, dim;
   int world_rank, world_size;
   double starttime_setup;
-  double *thetaCan, *thetaCurr;
+  double *thetaCan, *thetaCurr, qCan;
+  double *KovMatProposal;
+
   // init MPI
   MPI_Init(&argc,&argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&world_rank);
@@ -42,18 +44,19 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   /****************************************************************************/
   // Startpunkt
-  thetaCan  = (double *) malloc(dim * sizeof(double));
-  thetaCurr = (double *) malloc(dim * sizeof(double));
+  thetaCan  = (double *) calloc(dim, sizeof(double));
+  thetaCurr = (double *) calloc(dim, sizeof(double));
   // getStarted(dim, thetaCurr, posteriorCurr, qCurr); // Startpunkt und dessen Werte setzen
-  // // Kovarianzmatrix Proposalverteilung
+  // Kovarianzmatrix Proposalverteilung
+  KovMatProposal = (double *) calloc(dim, sizeof(double));
   // getKovMat(KovMatProposal);
   /****************************************************************************/
   /****************************************************************************/
   /****************************************************************************/
   // loop
   for (int iterJ = 0; iterJ < iterAll; iterJ++) {
-    // // Proposal
-    // getProposal(KovMatProposal, dim, thetaCurr, thetaCan, &qCan);
+    // Proposal
+    getProposal(KovMatProposal, dim, thetaCurr, thetaCan, &qCan);
     // // Posterior
     // getPosterior(thetaCan, posteriorCan);
     // // Akzeptanzlevel
@@ -69,6 +72,7 @@ int main(int argc,char *argv[])
   }
 
   // free memory
+  free(KovMatProposal);
   free(thetaCan);
   free(thetaCurr);
   // close MPI
