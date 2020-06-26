@@ -32,14 +32,14 @@ TMP_INCS  = ${includedir} ${INCLUDES_SPRNG} ${IDIR}
 INCLUDES  = $(addprefix -I, ${TMP_INCS})
 TMP_LIBRS = ${libdir} ${LIBRARIES_SPRNG} ${LDIR}
 LIB_DIR   = $(addprefix -L, ${TMP_LIBRS})
-LIBRARIES = -lsundials_cvode -lsundials_nvecserial ${LIBS}
+LIBRARIES = ${LIBS}
 
 # ----------------------------------------------------------------------------------------
 
-EXAMPLES = pbpkmcmc_seriellMH
+EXAMPLES = mcmcNormal
 
-DEPENDENCIES_C 	= pbpkmcmcfunc
-_DEPS_H 	= pbpkmcmc.h
+DEPENDENCIES_C 	= mcmcNormalfunc
+_DEPS_H 	= mcmcNormal.h
 DEPS_H		= $(patsubst %,$(IDIR)/%,$(_DEPS_H))
 
 _OBJECTS 		= ${EXAMPLES:=.o}
@@ -59,83 +59,17 @@ $(ODIR)/%.o: %.c $(DEPS_H)
 
 # ----------------------------------------------------------------------------------------
 
-all: MH blockMH blockmultMH
-run: MH_run blockMH_run blockmultMH_run
-run_chain: MH_run blockMH_run
-
-#all: seriellMH seriellblockMH parallelblockMH parallelblockmultipleMH sPHS_blockMH sPHS_MH
-#run: seriellMH_run seriellblockMH_run parallelblockMH_run parallelblockmultipleMH_run sPHS_blockMH_run sPHS_MH_run
-
-seriell: seriellMH_run seriellblockMH_run
-parallel: parallelblockMH_run parallelblockmultipleMH_run
-sPHS: sPHS_MH_run sPHS_blockMH_run
+all: mcmcNormal 
+run: mcmcNormal_run
 
 # ----------------------------------------------------------------------------------------
 
-MH_run: MH
-#	swapsStart = $(swapsStart); \
-#	while [ ${swapsStart} -le $(swaps) ] ; do \
-#		echo "mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) $(swapsStart)" ; \
-#		mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) $(swapsStart) ; \
-#		swapsStart = $(shell expr $(swapsStart) + $(nAdd) ) ; \
-#	done; \
-#	true
-#	mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) 0
-#	mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) 2
-#	mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) 4
-#	mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) 6
-#	mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) 8
-#	mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) 10
-	mpirun --oversubscribe -n $(nProc) ./MH $(iterAll) $(swaps) $(seed)
-MH: obj/pbpkmcmc_MH.o ${OBJECTS_DEPENDENCIES_C}
+mcmcNormal_run: mcmcNormalMain
+	mpirun --oversubscribe -n $(nProc) ./mcmcNormalMain $(iterAll) $(dim)# $(swaps) $(seed) $(mChainsBool) $(bPR)
+mcmcNormalMain: obj/mcmcNormalMain.o ${OBJECTS_DEPENDENCIES_C}
 	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
 
 # ----------------------------------------------------------------------------------------
-
-blockMH_run: blockMH
-	mpirun --oversubscribe -n $(nProc) ./blockMH $(iterAll) $(swaps) $(seed)
-blockMH: obj/pbpkmcmc_blockMH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-
-# ----------------------------------------------------------------------------------------
-
-blockmultMH_run: blockmultMH
-	mpirun --oversubscribe -n $(nProc) ./blockmultMH $(iterAll) $(swaps) $(seed) $(mChainsBool) $(bPR)
-blockmultMH: obj/pbpkmcmc_blockmultMH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-
-# ----------------------------------------------------------------------------------------
-
-seriellMH_run: seriellMH
-	mpirun --oversubscribe -n 1 ./seriellMH $(iterAll)
-seriellMH: obj/pbpkmcmc_seriellMH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-
-seriellblockMH_run: seriellblockMH
-	mpirun --oversubscribe -n 1 ./seriellblockMH $(iterAll)
-seriellblockMH: obj/pbpkmcmc_seriellblockMH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-	
-parallelblockmultipleMH_run: parallelblockmultipleMH
-	mpirun --oversubscribe -n $(nProc) ./parallelblockmultipleMH $(iterAll)
-parallelblockmultipleMH: obj/pbpkmcmc_parallelblockmultipleMH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-
-parallelblockMH_run: parallelblockMH
-	mpirun --oversubscribe -n 11 ./parallelblockMH $(iterAll)
-parallelblockMH: obj/pbpkmcmc_parallelblockMH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-
-sPHS_MH_run: sPHS_MH
-	mpirun --oversubscribe -n $(nProc) ./sPHS_MH $(iterAll) $(swapBool)
-sPHS_MH: obj/pbpkmcmc_sPHS_MH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-
-sPHS_blockMH_run: sPHS_blockMH
-	mpirun --oversubscribe -n $(nProc) ./sPHS_blockMH $(iterAll) $(swapBool)
-sPHS_blockMH: obj/pbpkmcmc_sPHS_blockMH.o ${OBJECTS_DEPENDENCIES_C}
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
-
 
 examples: ${OBJECTS}
 	@for i in ${EXAMPLES} ; do \
