@@ -35,33 +35,37 @@ int getKovMat(double* KovMat, int type, int dimension){
 
 /******************************************************************************/
 
-int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCan){
+int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCurr, double* qCan){
   // Proposal ist Random Walk um die aktuelle Position.
   // Die einzelnen Einträge sind unabhängig voneinander; können sie also einzeln würfeln.
   //
   // thetaCan = thetaCurr + sigma * ksi mit ksi = N(0,1).
   gsl_rng *r;
   int retval;
+  double nennerCurr, nennerCan;
   double *KovMatProposal;
 
   KovMatProposal = (double *) calloc(dimension, sizeof(double));
   retval = getKovMat(KovMatProposal, PROP, dimension);
 
-  if (*qCan == -1.0) {
-    /* in diesem Fall moechte ich nur den Wert der Proposalverteilung */
-    // Proposal ist Random Walk um aktuelle Position
-    for (int i = 0; i < dimension; i++) {
-
-    }
-    return(0);
-  }
-
-  for (int i = 0; i < dimension; i++) {
-    thetaCan[i] = i;
-  }
+  // Kandidaten wuerfeln:
+  // Da ich einen Random Walk ohne Kovarianzen mache, kann ich jeden Eintrag
+  // einzeln wuerfeln.
   // for (int i = 0; i < dimension; i++) {
   //   thetaCan = thetaCurr + KovMatProposal[i] * gsl_ran_gaussian(gslrng,1.0);
   // }
+
+  // Wahrscheinlichkeiten qCurr und qCan berechnen:
+  // Kovarianzmatrix ist diagonal -> det(.) ist das Produkt der einzelnen Einträge
+  nennerCan = 1.0; nennerCurr = 1.0; *qCan = 0.0; *qCurr = 0.0;
+  for (int i = 0; i < dimension; i++) {
+    nennerCan  *= 2*M_PI * KovMatProposal[i];
+    nennerCurr = nennerCan;
+    *qCan      += pow(thetaCan[i] - thetaCurr[i],2) / KovMatProposal[i];
+    *qCurr     += pow(thetaCurr[i] - thetaCan[i],2) / KovMatProposal[i];
+  }
+  *qCan  = exp(-0.5 * *qCan) / sqrt(nennerCan);
+  *qCurr = exp(-0.5 * *qCurr) / sqrt(nennerCurr);
 
   free(KovMatProposal);
   return(0);
@@ -82,8 +86,8 @@ int getPosterior(double* theta, int dimension, double* posterior){
   // Kovarianzmatrix ist diagonal -> det(.) ist das Produkt der einzelnen Einträge
   *posterior = 0.0; nenner = 1.0;
   for (int i = 0; i < dimension; i++) {
-    nenner *= 2*M_PI * KovMatPosterior[i];
-    *posterior += pow(theta[i] - MuPosterior[i],2) / KovMatPosterior[i];
+    nenner      *= 2*M_PI * KovMatPosterior[i];
+    *posterior  += pow(theta[i] - MuPosterior[i],2) / KovMatPosterior[i];
   }
   *posterior = exp(-0.5 * *posterior) / sqrt(nenner);
 
@@ -94,7 +98,7 @@ int getPosterior(double* theta, int dimension, double* posterior){
 
 /******************************************************************************/
 
-int getStarted(int dimension, double* theta, double* posterior, double* proposal){
+int getStarted(int dimension, double* theta, double* posterior){
   int retval;
   double startValue = 1.0;
 
@@ -103,9 +107,6 @@ int getStarted(int dimension, double* theta, double* posterior, double* proposal
   }
 
   retval = getPosterior(theta, dimension, posterior);
-
-  *proposal = -1.0;
-  retval = getProposal(dimension, theta, theta, proposal);
 
   return(0);
 }

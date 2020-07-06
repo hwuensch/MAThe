@@ -53,7 +53,7 @@ int main(int argc,char *argv[])
   // Startpunkt
   thetaCan  = (double *) calloc(dim, sizeof(double));
   thetaCurr = (double *) calloc(dim, sizeof(double));
-  retval = getStarted(dim, thetaCurr, &posteriorCurr, &qCurr); // Startpunkt und dessen Werte setzen
+  retval = getStarted(dim, thetaCurr, &posteriorCurr); // Startpunkt und dessen Werte setzen
 
   /****************************************************************************/
   /****************************************************************************/
@@ -61,9 +61,9 @@ int main(int argc,char *argv[])
   // loop
   for (int iterJ = 0; iterJ < iterAll; iterJ++) {
     // Proposal
-    retval = getProposal(dim, thetaCurr, thetaCan, &qCan);
-    // // Posterior
-    // retval = getPosterior(thetaCan, dim, &posteriorCan);
+    retval = getProposal(dim, thetaCurr, thetaCan, &qCurr, &qCan);
+    // Posterior
+    retval = getPosterior(thetaCan, dim, &posteriorCan);
     // // Akzeptanzlevel
     // acceptlevel =  getAcceptancelevel(posteriorCan, posteriorCurr, qCan, qCurr);
     // // AccRej
