@@ -40,21 +40,22 @@ int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCu
   // Die einzelnen Einträge sind unabhängig voneinander; können sie also einzeln würfeln.
   //
   // thetaCan = thetaCurr + sigma * ksi mit ksi = N(0,1).
-  gsl_rng *r;
+  gsl_rng *gslrng;
   int retval;
   double nennerCurr, nennerCan;
   double *KovMatProposal;
 
+  gslrng = gsl_rng_alloc(gsl_rng_taus);
   KovMatProposal = (double *) calloc(dimension, sizeof(double));
   retval = getKovMat(KovMatProposal, PROP, dimension);
 
   // Kandidaten wuerfeln:
   // Da ich einen Random Walk ohne Kovarianzen mache, kann ich jeden Eintrag
   // einzeln wuerfeln.
-  // for (int i = 0; i < dimension; i++) {
-  //   thetaCan = thetaCurr + KovMatProposal[i] * gsl_ran_gaussian(gslrng,1.0);
-  // }
-
+  for (int i = 0; i < dimension; i++) {
+    thetaCan[i] = thetaCurr[i] + sqrt(KovMatProposal[i]) * gsl_ran_gaussian(gslrng,1.0);
+  }
+  
   // Wahrscheinlichkeiten qCurr und qCan berechnen:
   // Kovarianzmatrix ist diagonal -> det(.) ist das Produkt der einzelnen Einträge
   nennerCan = 1.0; nennerCurr = 1.0; *qCan = 0.0; *qCurr = 0.0;
@@ -68,6 +69,7 @@ int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCu
   *qCurr = exp(-0.5 * *qCurr) / sqrt(nennerCurr);
 
   free(KovMatProposal);
+  gsl_rng_free(gslrng);
   return(0);
 }
 

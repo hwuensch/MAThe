@@ -71,12 +71,6 @@ mcmcNormalMain: obj/mcmcNormalMain.o ${OBJECTS_DEPENDENCIES_C}
 
 # ----------------------------------------------------------------------------------------
 
-examples: ${OBJECTS}
-	@for i in ${EXAMPLES} ; do \
-	  echo "${CC} -o $${i} $${i}.o ${OBJECTS_DEPENDENCIES_C} ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}" ; \
-	  ${CC} -o $${i} $${i}.o ${OBJECTS_DEPENDENCIES_C} ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS} ; \
-	done
-
 ${OBJECTS}: ${OBJECTS_DEPENDENCIES_C}
 
 clean:
