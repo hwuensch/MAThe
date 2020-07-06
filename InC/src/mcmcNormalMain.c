@@ -57,6 +57,7 @@ int main(int argc,char *argv[])
   for (int iterJ = 0; iterJ < iterAll; iterJ++) {
     // Proposal
     getProposal(KovMatProposal, dim, thetaCurr, thetaCan, &qCan);
+    printf("check git\n");
     // // Posterior
     // getPosterior(thetaCan, posteriorCan);
     // // Akzeptanzlevel
