@@ -45,7 +45,7 @@ int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCu
   double nennerCurr, nennerCan;
   double *KovMatProposal;
 
-  gslrng = gsl_rng_alloc(gsl_rng_taus);
+  gslrng = gsl_rng_alloc(gsl_rng_taus2);
   KovMatProposal = (double *) calloc(dimension, sizeof(double));
   retval = getKovMat(KovMatProposal, PROP, dimension);
 
@@ -55,7 +55,7 @@ int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCu
   for (int i = 0; i < dimension; i++) {
     thetaCan[i] = thetaCurr[i] + sqrt(KovMatProposal[i]) * gsl_ran_gaussian(gslrng,1.0);
   }
-  
+
   // Wahrscheinlichkeiten qCurr und qCan berechnen:
   // Kovarianzmatrix ist diagonal -> det(.) ist das Produkt der einzelnen Einträge
   nennerCan = 1.0; nennerCurr = 1.0; *qCan = 0.0; *qCurr = 0.0;
@@ -110,5 +110,15 @@ int getStarted(int dimension, double* theta, double* posterior){
 
   retval = getPosterior(theta, dimension, posterior);
 
+  return(0);
+}
+
+/******************************************************************************/
+
+int getAcceptancelevel(double* posteriorCan, double* posteriorCurr, double* qCan, double* qCurr, double* acceptlevel){
+  int retval;
+
+  *acceptlevel = *posteriorCan * *qCan / *posteriorCurr / *qCurr;
+  
   return(0);
 }
