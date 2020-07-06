@@ -10,12 +10,11 @@
 #define PROP 1
 #define POST 2
 
-int getProposal(double* KovMatProposal, int dim, double* thetaCurr, double thetaCan[], double* qCan){
+int getProposal(double* KovMatProposal, int dimension, double* thetaCurr, double thetaCan[], double* qCan){
   // Proposal ist Random Walk um die aktuelle Position.
   // Die einzelnen Einträge sind unabhängig voneinander; können sie also einzeln würfeln.
   //
   // thetaCan = thetaCurr + sigma * ksi mit ksi = N(0,1).
-  int dimension = dim;
   gsl_rng *r;
 
   for (int i = 0; i < dimension; i++) {
@@ -27,12 +26,23 @@ int getProposal(double* KovMatProposal, int dim, double* thetaCurr, double theta
   return(0);
 }
 
-int getKovMat(double* KovMat, int type){
-  // Kovarianzmatrix befuellen
+int getKovMat(double* KovMat, int type, int dimension){
+  double inhalt;
+
+  // Inhalt fuer KovMat festlegen
   switch (type) {
-    case PROP: 
+    case PROP:
+      inhalt = pow(0.5,2);
+      break;
+    case POST:
+      inhalt = pow(1.0,2);
       break;
     default: return(1); break;
   }
+  // Kovarianzmatrix befuellen
+  for (int i = 0; i < dimension; i++) {
+    KovMat[i] = inhalt;
+  }
+
   return(0);
 }

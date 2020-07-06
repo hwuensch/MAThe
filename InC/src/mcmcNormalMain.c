@@ -15,7 +15,7 @@ int main(int argc,char *argv[])
   int world_rank, world_size;
   double starttime_setup;
   double *thetaCan, *thetaCurr, qCan;
-  double *KovMatProposal;
+  double *KovMatProposal, *KovMatPosterior;
 
   // init MPI
   MPI_Init(&argc,&argv);
@@ -48,9 +48,12 @@ int main(int argc,char *argv[])
   thetaCan  = (double *) calloc(dim, sizeof(double));
   thetaCurr = (double *) calloc(dim, sizeof(double));
   // getStarted(dim, thetaCurr, posteriorCurr, qCurr); // Startpunkt und dessen Werte setzen
-  // Kovarianzmatrix Proposalverteilung
+  // Kovarianzmatrizen, damit sie nicht in jeder Iteration neu aufgebaut werden muessen
   KovMatProposal = (double *) calloc(dim, sizeof(double));
-  retval = getKovMat(KovMatProposal, PROP);
+  retval = getKovMat(KovMatProposal, PROP, dim);
+  KovMatPosterior = (double *) calloc(dim, sizeof(double));
+  retval = getKovMat(KovMatPosterior, POST, dim);
+
   /****************************************************************************/
   /****************************************************************************/
   /****************************************************************************/
