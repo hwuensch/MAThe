@@ -1,2 +1,5 @@
-int getProposal(double* KovMatProposal, int dimension, double* thetaCurr, double thetaCan[], double* qCan);
+
 int getKovMat(double* KovMat, int type, int dimension);
+int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCan);
+int getPosterior(double* thetaCurr, int dimension, double* posteriorCurr);
+int getStarted(int dimension, double* thetaCurr, double* posteriorCurr, double* qCurr);
