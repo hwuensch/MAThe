@@ -7,7 +7,10 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-void getProposal(double* KovMatProposal, int dim, double* thetaCurr, double thetaCan[], double* qCan){
+#define PROP 1
+#define POST 2
+
+int getProposal(double* KovMatProposal, int dim, double* thetaCurr, double thetaCan[], double* qCan){
   // Proposal ist Random Walk um die aktuelle Position.
   // Die einzelnen Einträge sind unabhängig voneinander; können sie also einzeln würfeln.
   //
@@ -21,4 +24,15 @@ void getProposal(double* KovMatProposal, int dim, double* thetaCurr, double thet
   // for (int i = 0; i < dimension; i++) {
   //   thetaCan = thetaCurr + KovMatProposal[i] * gsl_ran_gaussian(gslrng,1.0);
   // }
+  return(0);
+}
+
+int getKovMat(double* KovMat, int type){
+  // Kovarianzmatrix befuellen
+  switch (type) {
+    case PROP: 
+      break;
+    default: return(1); break;
+  }
+  return(0);
 }

@@ -5,10 +5,12 @@
 #include <mpi.h>
 #include <mcmcNormal.h>
 
-
+#define PROP 1
+#define POST 2
 
 int main(int argc,char *argv[])
 {
+  int retval;
   int iterAll, iterJ, dim;
   int world_rank, world_size;
   double starttime_setup;
@@ -37,7 +39,6 @@ int main(int argc,char *argv[])
   } else {
     printf("No dimension 'dim' is defined. We work with dim=20.\n");
     dim = 20;
-    return(1);
   }
 
   /****************************************************************************/
@@ -49,15 +50,14 @@ int main(int argc,char *argv[])
   // getStarted(dim, thetaCurr, posteriorCurr, qCurr); // Startpunkt und dessen Werte setzen
   // Kovarianzmatrix Proposalverteilung
   KovMatProposal = (double *) calloc(dim, sizeof(double));
-  // getKovMat(KovMatProposal);
+  retval = getKovMat(KovMatProposal, PROP);
   /****************************************************************************/
   /****************************************************************************/
   /****************************************************************************/
   // loop
   for (int iterJ = 0; iterJ < iterAll; iterJ++) {
     // Proposal
-    getProposal(KovMatProposal, dim, thetaCurr, thetaCan, &qCan);
-    printf("check git\n");
+    retval = getProposal(KovMatProposal, dim, thetaCurr, thetaCan, &qCan);
     // // Posterior
     // getPosterior(thetaCan, posteriorCan);
     // // Akzeptanzlevel
