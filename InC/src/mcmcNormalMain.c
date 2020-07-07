@@ -48,6 +48,7 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   /****************************************************************************/
   /****************************************************************************/
+  gslrng = gsl_rng_alloc(gsl_rng_taus2);
   // Kovarianzmatrizen, damit sie nicht in jeder Iteration neu aufgebaut werden muessen
   KovMatProposal = (double *) calloc(dim, sizeof(double));
   retval = getKovMat(KovMatProposal, PROP, dim);
@@ -67,7 +68,7 @@ int main(int argc,char *argv[])
     // Proposal
     for (int i = 0; i < dim; i++) { printf("theta_%d %g\n",i,thetaCan[i]); }
     printf("%g %g\n",qCurr,qCan);
-    retval = getProposal(dim, thetaCurr, thetaCan, &qCurr, &qCan);
+    retval = getProposal(gslrng, dim, thetaCurr, thetaCan, &qCurr, &qCan);
     for (int i = 0; i < dim; i++) { printf("theta_%d %g\n",i,thetaCan[i]); }
     printf("%g %g\n",qCurr,qCan);
     // Posterior
@@ -75,7 +76,6 @@ int main(int argc,char *argv[])
     // Akzeptanzlevel
     retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
     // AccRej
-    gslrng = gsl_rng_alloc(gsl_rng_mt19937);
     acceptUniform = gsl_rng_uniform(gslrng);
     printf("\t%g < %g\t",acceptUniform, acceptlevel);
     if (acceptUniform < acceptlevel) {

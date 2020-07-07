@@ -35,17 +35,17 @@ int getKovMat(double* KovMat, int type, int dimension){
 
 /******************************************************************************/
 
-int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCurr, double* qCan){
+int getProposal(const gsl_rng* gslrng, int dimension, double* thetaCurr, double thetaCan[], double* qCurr, double* qCan){
   // Proposal ist Random Walk um die aktuelle Position.
   // Die einzelnen Einträge sind unabhängig voneinander; können sie also einzeln würfeln.
   //
   // thetaCan = thetaCurr + sigma * ksi mit ksi = N(0,1).
-  gsl_rng *gslrng;
+  // gsl_rng *gslrng;
   int retval;
   double nennerCurr, nennerCan;
   double *KovMatProposal;
 
-  gslrng = gsl_rng_alloc(gsl_rng_taus2);
+  // gslrng = gsl_rng_alloc(gsl_rng_taus2);
   KovMatProposal = (double *) calloc(dimension, sizeof(double));
   retval = getKovMat(KovMatProposal, PROP, dimension);
 
@@ -69,7 +69,6 @@ int getProposal(int dimension, double* thetaCurr, double thetaCan[], double* qCu
   *qCurr = exp(-0.5 * *qCurr) / sqrt(nennerCurr);
 
   free(KovMatProposal);
-  gsl_rng_free(gslrng);
   return(0);
 }
 
@@ -119,6 +118,19 @@ int getAcceptancelevel(double* posteriorCan, double* posteriorCurr, double* qCan
   int retval;
 
   *acceptlevel = *posteriorCan * *qCan / *posteriorCurr / *qCurr;
-  
+
   return(0);
 }
+
+/******************************************************************************/
+
+long getSeed(){
+    /* calculates and returns the current time
+     */
+    struct timeval timevalue;
+
+    gettimeofday(&timevalue, 0);
+    return(timevalue.tv_sec + timevalue.tv_usec);
+}
+
+/******************************************************************************/
