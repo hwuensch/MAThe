@@ -19,6 +19,7 @@ int main(int argc,char *argv[])
   double *thetaCan, *thetaCurr, posteriorCurr, posteriorCan, qCurr, qCan;
   double acceptlevel, acceptUniform;
   double *KovMatProposal, *KovMatPosterior;
+  unsigned long seed;
   gsl_rng *gslrng;
 
   // init MPI
@@ -48,7 +49,11 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   /****************************************************************************/
   /****************************************************************************/
+  // Random number generator initialisieren
   gslrng = gsl_rng_alloc(gsl_rng_taus2);
+  seed   = getSeed();            // get a seed based on current time. default seed = 0.
+  gsl_rng_set(gslrng, seed);     // set a different seed for the rng.
+
   // Kovarianzmatrizen, damit sie nicht in jeder Iteration neu aufgebaut werden muessen
   KovMatProposal = (double *) calloc(dim, sizeof(double));
   retval = getKovMat(KovMatProposal, PROP, dim);
