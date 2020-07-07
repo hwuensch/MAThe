@@ -4,8 +4,12 @@
 #include <math.h>
 #include <sys/time.h>
 
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
+// #include <gsl/gsl_cdf.h>
+#include <gsl/gsl_linalg.h>
 
 #define PROP 1
 #define POST 2
@@ -45,11 +49,30 @@ int getProposal(const gsl_rng* gslrng, int dimension, double* thetaCurr, double 
   double nennerCurr, nennerCan;
   double *KovMatProposal;
 
-  // gslrng = gsl_rng_alloc(gsl_rng_taus2);
+  gsl_vector *thetaCanV, *thetaCurrV;
+  gsl_matrix *KovMatProposalCholesky;
+
+  thetaCurrV = gsl_vector_alloc(dimension);
+  thetaCanV  = gsl_vector_calloc(dimension);
+  for (int i = 0; i < dimension; i++) {
+    gsl_vector_set(thetaCurrV, i, thetaCurr[i]);
+  }
+
   KovMatProposal = (double *) calloc(dimension, sizeof(double));
   retval = getKovMat(KovMatProposal, PROP, dimension);
+  KovMatProposalCholesky = gsl_matrix_calloc(dimension,dimension);
+  for (int i = 0; i < dimension; i++) {
+    gsl_matrix_set(KovMatProposalCholesky, i, i, KovMatProposal[i]);
+  }
 
   // Kandidaten wuerfeln:
+  /* via gsl:
+   * int gsl_linalg_cholesky_decomp1(gsl_matrix * A) -> Error GSL_EDOM, falls nicht positiv definit
+   * int gsl_ran_multivariate_gaussian(const gsl_rng * r, const gsl_vector * mu, const gsl_matrix * L, gsl_vector * result)
+   */
+  retval = gsl_linalg_cholesky_decomp1(KovMatProposalCholesky);
+  retval = gsl_ran_multivariate_gaussian(gslrng, thetaCurrV, KovMatProposalCholesky, thetaCanV);
+
   // Da ich einen Random Walk ohne Kovarianzen mache, kann ich jeden Eintrag
   // einzeln wuerfeln.
   for (int i = 0; i < dimension; i++) {
@@ -69,6 +92,9 @@ int getProposal(const gsl_rng* gslrng, int dimension, double* thetaCurr, double 
   *qCurr = exp(-0.5 * *qCurr) / sqrt(nennerCurr);
 
   free(KovMatProposal);
+  gsl_vector_free(thetaCanV);
+  gsl_vector_free(thetaCurrV);
+  gsl_matrix_free(KovMatProposalCholesky);
   return(0);
 }
 
