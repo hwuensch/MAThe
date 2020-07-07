@@ -71,6 +71,7 @@ int getProposal(const gsl_rng* gslrng, int dimension, double* thetaCurr, double 
    * int gsl_ran_multivariate_gaussian(const gsl_rng * r, const gsl_vector * mu, const gsl_matrix * L, gsl_vector * result)
    */
   retval = gsl_linalg_cholesky_decomp1(KovMatProposalCholesky);
+  if (retval == GSL_EDOM) { printf("KovMat der Proposal ist nicht spd!\n");}
   retval = gsl_ran_multivariate_gaussian(gslrng, thetaCurrV, KovMatProposalCholesky, thetaCanV);
 
   // Da ich einen Random Walk ohne Kovarianzen mache, kann ich jeden Eintrag
