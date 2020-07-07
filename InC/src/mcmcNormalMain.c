@@ -19,7 +19,6 @@ int main(int argc,char *argv[])
   double startvalue;
   double *thetaCan, *thetaCurr, posteriorCurr, posteriorCan, qCurr, qCan;
   double acceptlevel, acceptUniform;
-  double *KovMatProposal, *KovMatPosterior;
   unsigned long seed;
   gsl_rng *gslrng;
 
@@ -62,12 +61,6 @@ int main(int argc,char *argv[])
   seed   = getSeed();            // get a seed based on current time. default seed = 0.
   gsl_rng_set(gslrng, seed);     // set a different seed for the rng.
 
-  // Kovarianzmatrizen, damit sie nicht in jeder Iteration neu aufgebaut werden muessen
-  KovMatProposal = (double *) calloc(dim, sizeof(double));
-  retval = getKovMat(KovMatProposal, PROP, dim);
-  KovMatPosterior = (double *) calloc(dim, sizeof(double));
-  retval = getKovMat(KovMatPosterior, POST, dim);
-
   // Startpunkt
   thetaCan  = (double *) calloc(dim, sizeof(double));
   thetaCurr = (double *) calloc(dim, sizeof(double));
@@ -100,7 +93,6 @@ int main(int argc,char *argv[])
   }
 
   // free memory
-  free(KovMatProposal);
   free(thetaCan);
   free(thetaCurr);
   gsl_rng_free(gslrng);
