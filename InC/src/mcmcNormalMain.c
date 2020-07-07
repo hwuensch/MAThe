@@ -16,6 +16,7 @@ int main(int argc,char *argv[])
   int iterAll, iterJ, dim;
   int world_rank, world_size;
   double starttime_setup;
+  double startvalue;
   double *thetaCan, *thetaCurr, posteriorCurr, posteriorCan, qCurr, qCan;
   double acceptlevel, acceptUniform;
   double *KovMatProposal, *KovMatPosterior;
@@ -45,6 +46,13 @@ int main(int argc,char *argv[])
     printf("No dimension 'dim' is defined. We work with dim=20.\n");
     dim = 20;
   }
+  // startvalue
+  if (argc>3) {
+    startvalue = atoi(argv[3]);
+  } else {
+    printf("No startvalue 'start' is defined. We work with start=2.0.\n");
+    startvalue = 2.0;
+  }
 
   /****************************************************************************/
   /****************************************************************************/
@@ -63,7 +71,7 @@ int main(int argc,char *argv[])
   // Startpunkt
   thetaCan  = (double *) calloc(dim, sizeof(double));
   thetaCurr = (double *) calloc(dim, sizeof(double));
-  retval = getStarted(dim, thetaCurr, &posteriorCurr); // Startpunkt und dessen Werte setzen
+  retval = getStarted(startvalue, dim, thetaCurr, &posteriorCurr); // Startpunkt und dessen Werte setzen
 
   /****************************************************************************/
   /****************************************************************************/
@@ -71,18 +79,17 @@ int main(int argc,char *argv[])
   // loop
   for (int iterJ = 0; iterJ < iterAll; iterJ++) {
     // Proposal
-    for (int i = 0; i < dim; i++) { printf("theta_%d %g\n",i,thetaCan[i]); }
-    printf("%g %g\n",qCurr,qCan);
     retval = getProposal(gslrng, dim, thetaCurr, thetaCan, &qCurr, &qCan);
-    for (int i = 0; i < dim; i++) { printf("theta_%d %g\n",i,thetaCan[i]); }
-    printf("%g %g\n",qCurr,qCan);
+    printf("candid_%3d\t",iterJ);
+    for (int i = 0; i < dim; i++) { printf("%.2f\t",thetaCan[i]); }
+
     // Posterior
     retval = getPosterior(thetaCan, dim, &posteriorCan);
     // Akzeptanzlevel
     retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
     // AccRej
     acceptUniform = gsl_rng_uniform(gslrng);
-    printf("\t%g < %g\t",acceptUniform, acceptlevel);
+    printf("%.3f < %.3f\t",acceptUniform, acceptlevel);
     if (acceptUniform < acceptlevel) {
       printf("YES\n");
       for (int i = 0; i < dim; i++) { thetaCurr[i] = thetaCan[i]; }

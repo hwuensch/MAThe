@@ -18,10 +18,10 @@ int getKovMat(double* KovMat, int type, int dimension){
   // Inhalt fuer KovMat festlegen
   switch (type) {
     case PROP:
-      inhalt = pow(0.5,2);
+      inhalt = pow(0.4,2);
       break;
     case POST:
-      inhalt = pow(1.0,2);
+      inhalt = pow(2.0,2);
       break;
     default: return(1); break;
   }
@@ -99,12 +99,11 @@ int getPosterior(double* theta, int dimension, double* posterior){
 
 /******************************************************************************/
 
-int getStarted(int dimension, double* theta, double* posterior){
+int getStarted(double startvalue, int dimension, double* theta, double* posterior){
   int retval;
-  double startValue = 1.0;
 
   for (int i = 0; i < dimension; i++) {
-    theta[i] = startValue;
+    theta[i] = startvalue;
   }
 
   retval = getPosterior(theta, dimension, posterior);
