@@ -86,13 +86,14 @@ int main(int argc,char *argv[])
     // AccRej
     acceptUniform = gsl_rng_uniform(gslrng);
     printf("%.3f\t>\t%.3f\t", acceptlevel, acceptUniform);
-    // if (acceptUniform < acceptlevel) {
-    //   printf("YES\t");
-    //   for (int i = 0; i < dim; i++) { thetaCurr[i] = thetaCan[i]; }
-    //   posteriorCurr = posteriorCan;
-    // } else {
-    //   printf("no\t");
-    // }
+    if (acceptUniform < acceptlevel) {
+      printf("YES\t");
+      retval = gsl_vector_memcpy(thetaCurrV, thetaCanV);
+      posteriorCurr = posteriorCan;
+    } else {
+      printf("no\t");
+    }
+    printf("curr_%3d\t",iterJ); for (int i = 0; i < dimension; i++) { printf("%.2f\t",gsl_vector_get(thetaCurrV,i)); }
     printf("\n");
   }
 
