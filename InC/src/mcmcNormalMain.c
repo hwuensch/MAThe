@@ -105,7 +105,7 @@ int main(int argc,char *argv[])
     }
     fprintf(fileLog,"\n");
   }
-  for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.2f\t",gsl_vector_get(thetaCurrV,i)); } fprintf(fileLog,"\n");
+  for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.6e\t",gsl_vector_get(thetaCurrV,i)); } fprintf(fileLog,"\n");
 
 
   // free memory

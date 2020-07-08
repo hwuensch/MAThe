@@ -19,16 +19,16 @@ function fileLog = importfileLog(filename, dimension)
 
 % If dataLines is not specified, define defaults
 dataLines = [1, Inf];
-nColsInfo = 8;
+nColsInfo = 7;
 %% Setup the Import Options
-opts = delimitedTextImportOptions("NumVariables", dimension+nColsInfo);
+opts = delimitedTextImportOptions("NumVariables", 2*dimension+nColsInfo);
 
 % Specify range and delimiter
 opts.DataLines = dataLines;
 opts.Delimiter = "\t";
 
 % Specify column names and types
-opts.VariableTypes = repmat(["double"],1,dimension+nColsInfo);
+opts.VariableTypes = repmat(["double"],1,2*dimension+nColsInfo);
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 

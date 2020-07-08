@@ -1,4 +1,4 @@
-iterAll    = 500;
+iterAll    = 1000;
 dimension  = 2;
 startvalue = 3;
 world_rank = 0;
