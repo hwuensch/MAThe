@@ -1,13 +1,15 @@
 iterAll    = 1000;
 dimension  = 2;
 startvalue = 3;
-proptype   = 60;
+proptype   = 80;
 world_rank = 0;
 %%
 filename = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
 fileLog  = importfileInfo(filename, dimension);
 
-%%
+%% plots
+FontSize = 20;
+%% scatter der Kette + contour der Zielverteilung
 close all
 if dimension > 1
     n = 100;
@@ -25,13 +27,13 @@ if dimension > 1
     grid on
     xlabel('x_1'); ylabel('x_2'); zlabel('p(x)');
     ax = gca;
-    ax.FontWeight = 'bold'; ax.FontSize = 20;
+    ax.FontWeight = 'bold'; ax.FontSize = FontSize;
     ax.Children(ctr-contour2D).LineWidth = 2.5; ax.Children(ctr-contour2D).DisplayName = 'Zielverteilung';
     ax.Children(ctr-scatterAll).Marker = '+'; ax.Children(ctr-scatterAll).LineWidth = 1.5; ax.Children(ctr-scatterAll).DisplayName = 'Markovkette';
     ax.Children(ctr-scatterStart).LineWidth = 2; ax.Children(ctr-scatterStart).DisplayName = 'Startpunkt';
     legend('Location','northwest')
 end
-%%
+%% einzelne Markovketten als subplot
 fig = figure;
 fig.WindowState = 'maximized';
 for d=1:dimension
@@ -40,7 +42,18 @@ for d=1:dimension
     grid on
     ax = gca;
     ax.XLim = [0 size(fileLog,1)];
-    ax.FontWeight = 'bold'; ax.FontSize = 15;
+    ax.FontWeight = 'bold'; ax.FontSize = FontSize;
     ax.Children.LineWidth = 2;
 end
+%% einzelne Histogramme
+nBins = 40;
+for d=1:dimension
+    fig = figure;
+    histfit(fileLog(:,d),nBins,'kernel');
+    xlabel(sprintf('x_%d',d));
+    grid on;
+    ax = gca;
+    ax.FontWeight = 'bold'; ax.FontSize = FontSize;
+end
+
 %%

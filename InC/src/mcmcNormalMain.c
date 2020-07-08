@@ -91,7 +91,7 @@ int main(int argc,char *argv[])
     retval = writeToFile(fileChain, thetaCurrV);
     // Proposal
     retval = getProposal(gslrng, proposalType, dimension, thetaCurrV, thetaCanV, &qCurr, &qCan);
-    for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCanV,i)); }
+    retval = writeToFile(fileChain, thetaCanV);
 
     // Posterior
     retval = getPosterior(thetaCanV, dimension, &posteriorCan);
@@ -111,8 +111,9 @@ int main(int argc,char *argv[])
     }
     fprintf(fileChain,"\n");
   }
-  for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
-  fprintf(fileChain,"\t\t\t\t\t\t\t\t\t%.4f",(double)acceptrate/iterAll);
+  retval = writeToFile(fileChain, thetaCurrV);
+  for (int i = 0; i < dimension; i++) {fprintf(fileChain,"\t");}
+  fprintf(fileChain,"\t\t\t\t\t\t%.4f",(double)acceptrate/iterAll);
   fprintf(fileChain,"\n");
 
 

@@ -1,13 +1,13 @@
 iterAll    = 1000;
 dimension  = 2;
 startvalue = 3;
-proptype   = 60;
+proptype   = 80;
 world_rank = 0;
 %%
 filename = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
 fileLog  = importfileInfo(filename, dimension);
 
-%%
+%% scatter der K
 close all
 if dimension > 1
     n = 100;
@@ -19,14 +19,17 @@ if dimension > 1
     ctr = 1;
     figure
     hold on
-    scatter(fileLog(:,1),fileLog(:,2)); scatterAll=ctr; ctr=ctr+1;
-    scatter(fileLog(1,1),fileLog(1,2),'filled'); scatterStart=ctr; ctr=ctr+1; 
     contour3(X,Y,Z); contour2D=ctr; ctr=ctr+1;
+    scatter(fileLog(:,1),fileLog(:,2)); scatterAll=ctr; ctr=ctr+1;
+    scatter(fileLog(1,1),fileLog(1,2)); scatterStart=ctr; ctr=ctr+1; 
     grid on
+    xlabel('x_1'); ylabel('x_2'); zlabel('p(x)');
     ax = gca;
     ax.FontWeight = 'bold'; ax.FontSize = 20;
-    ax.Children(cont).LineWidth = 2.5;
-    ax.Children(3).Marker = '+'; ax.Children(3).LineWidth = 1.5; ax.Children(3).DisplayName = 'Markovkette';
+    ax.Children(ctr-contour2D).LineWidth = 2.5; ax.Children(ctr-contour2D).DisplayName = 'Zielverteilung';
+    ax.Children(ctr-scatterAll).Marker = '+'; ax.Children(ctr-scatterAll).LineWidth = 1.5; ax.Children(ctr-scatterAll).DisplayName = 'Markovkette';
+    ax.Children(ctr-scatterStart).LineWidth = 2; ax.Children(ctr-scatterStart).DisplayName = 'Startpunkt';
+    legend('Location','northwest')
 end
 %%
 fig = figure;
