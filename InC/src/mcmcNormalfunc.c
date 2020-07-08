@@ -61,7 +61,7 @@ int getProposal(const gsl_rng* gslrng, int dimension, gsl_vector* thetaCurrV, gs
   retval = gsl_linalg_cholesky_decomp1(KovMatProposalCholesky);
   if (retval == GSL_EDOM) { printf("KovMat der Proposal ist nicht spd!\n");}
   retval = gsl_ran_multivariate_gaussian(gslrng, thetaCurrV, KovMatProposalCholesky, thetaCanV);
-  // Wahrscheinlichkeiten qCurr und qCan berechnen:
+  // Wahrscheinlichkeiten qCurr und qCan berechnen: (bei symmetrischer Proposal gleich)
   retval = gsl_ran_multivariate_gaussian_pdf(thetaCanV, thetaCurrV, KovMatProposalCholesky, qCan, workspace);
   retval = gsl_ran_multivariate_gaussian_pdf(thetaCurrV, thetaCanV, KovMatProposalCholesky, qCurr, workspace);
 

@@ -22,13 +22,15 @@ int main(int argc,char *argv[])
   double acceptlevel, acceptUniform;
   unsigned long seed;
   gsl_rng *gslrng;
+  char filename_open[100];
+  FILE *fileLog;
 
   // init MPI
   MPI_Init(&argc,&argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&world_rank);
   MPI_Comm_size(MPI_COMM_WORLD,&world_size);
 
-  starttime_setup = MPI_Wtime();
+  // starttime_setup = MPI_Wtime();
 
   /* get inputs */
   // Constant for MCMC loop
@@ -48,12 +50,21 @@ int main(int argc,char *argv[])
   }
   // startvalue
   if (argc>3) {
-    startvalue = atoi(argv[3]);
+    startvalue = atof(argv[3]);
   } else {
     printf("No startvalue 'start' is defined. We work with start=2.0.\n");
     startvalue = 2.0;
   }
 
+  /* output file */
+  sprintf(filename_open,"");
+  sprintf(filename_open,"../output/iter%d_dim%d_start%g_rank%d.txt",iterAll,dimension,startvalue,world_rank);
+  fileLog=fopen(filename_open,"w");
+  if (fileLog==NULL) {
+    perror("Failed open");
+    MPI_Finalize();
+    return(1);
+  }
   /****************************************************************************/
   /****************************************************************************/
   /****************************************************************************/
@@ -66,36 +77,36 @@ int main(int argc,char *argv[])
   thetaCurrV = gsl_vector_calloc(dimension);
   thetaCanV  = gsl_vector_calloc(dimension);
   retval = getStarted(startvalue, dimension, thetaCurrV, &posteriorCurr); // Startpunkt und dessen Werte setzen
-  printf("x_0 = (");for (size_t i = 0; i < dimension; i++) {printf("%g\t",gsl_vector_get(thetaCurrV,i));} printf(")\n");
-  printf("p(x_0) = %g\n",posteriorCurr);
 
   /****************************************************************************/
   /****************************************************************************/
   /****************************************************************************/
   // loop
-  for (int iterJ = 0; iterJ < iterAll; iterJ++) {
+  for (iterJ = 0; iterJ < iterAll; iterJ++) {
+    for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
     // Proposal
     retval = getProposal(gslrng, dimension, thetaCurrV, thetaCanV, &qCurr, &qCan);
-    printf("candid_%3d\t",iterJ); for (int i = 0; i < dimension; i++) { printf("%.2f\t",gsl_vector_get(thetaCanV,i)); }
+    for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.4e\t",gsl_vector_get(thetaCanV,i)); }
 
     // Posterior
     retval = getPosterior(thetaCanV, dimension, &posteriorCan);
-    printf("%.2e\t%.3f\t%.2e\t%.3f\t", posteriorCan, qCurr, posteriorCurr, qCan);
+    fprintf(fileLog,"%.6e\t%.6e\t%.6e\t%.6e\t", posteriorCan, qCurr, posteriorCurr, qCan);
     // Akzeptanzlevel
     retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
     // AccRej
     acceptUniform = gsl_rng_uniform(gslrng);
-    printf("%.3f\t>\t%.3f\t", acceptlevel, acceptUniform);
+    fprintf(fileLog,"%.6e\t%.6e\t", acceptlevel, acceptUniform);
     if (acceptUniform < acceptlevel) {
-      printf("YES\t");
+      fprintf(fileLog,"1\t");
       retval = gsl_vector_memcpy(thetaCurrV, thetaCanV);
       posteriorCurr = posteriorCan;
     } else {
-      printf("no\t");
+      fprintf(fileLog,"0\t");
     }
-    printf("curr_%3d\t",iterJ); for (int i = 0; i < dimension; i++) { printf("%.2f\t",gsl_vector_get(thetaCurrV,i)); }
-    printf("\n");
+    fprintf(fileLog,"\n");
   }
+  for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.2f\t",gsl_vector_get(thetaCurrV,i)); } fprintf(fileLog,"\n");
+
 
   // free memory
   gsl_vector_free(thetaCanV);
