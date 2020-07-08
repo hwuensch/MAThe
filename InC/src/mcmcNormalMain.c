@@ -13,11 +13,12 @@
 int main(int argc,char *argv[])
 {
   int retval;
-  int iterAll, iterJ, dim;
+  int iterAll, iterJ, dimension;
   int world_rank, world_size;
   double starttime_setup;
   double startvalue;
   double *thetaCan, *thetaCurr, posteriorCurr, posteriorCan, qCurr, qCan;
+  gsl_vector *thetaCanV, *thetaCurrV;
   double acceptlevel, acceptUniform;
   unsigned long seed;
   gsl_rng *gslrng;
@@ -40,10 +41,10 @@ int main(int argc,char *argv[])
   }
   // dimension
   if (argc>2) {
-    dim = atoi(argv[2]);
+    dimension = atoi(argv[2]);
   } else {
     printf("No dimension 'dim' is defined. We work with dim=20.\n");
-    dim = 20;
+    dimension = 20;
   }
   // startvalue
   if (argc>3) {
@@ -62,9 +63,11 @@ int main(int argc,char *argv[])
   gsl_rng_set(gslrng, seed);     // set a different seed for the rng.
 
   // Startpunkt
-  thetaCan  = (double *) calloc(dim, sizeof(double));
-  thetaCurr = (double *) calloc(dim, sizeof(double));
-  retval = getStarted(startvalue, dim, thetaCurr, &posteriorCurr); // Startpunkt und dessen Werte setzen
+  thetaCurrV = gsl_vector_alloc(dimension);
+  thetaCanV  = gsl_vector_calloc(dimension);
+  retval = getStarted(startvalue, dimension, thetaCurrV, &posteriorCurr); // Startpunkt und dessen Werte setzen
+  printf("x_0 = (");for (size_t i = 0; i < dimension; i++) {printf("%g\t",gsl_vector_get(thetaCurrV,i));} printf(")\n");
+  printf("p(x_0) = %g\n",posteriorCurr);
 
   /****************************************************************************/
   /****************************************************************************/
@@ -72,29 +75,29 @@ int main(int argc,char *argv[])
   // loop
   for (int iterJ = 0; iterJ < iterAll; iterJ++) {
     // Proposal
-    retval = getProposal(gslrng, dim, thetaCurr, thetaCan, &qCurr, &qCan);
-    printf("candid_%3d\t",iterJ);
-    for (int i = 0; i < dim; i++) { printf("%.2f\t",thetaCan[i]); }
+    // retval = getProposal(gslrng, dim, thetaCurr, thetaCan, &qCurr, &qCan);
+    // printf("candid_%3d\t",iterJ);
+    // for (int i = 0; i < dim; i++) { printf("%.2f\t",thetaCan[i]); }
 
-    // Posterior
-    retval = getPosterior(thetaCan, dim, &posteriorCan);
-    // Akzeptanzlevel
-    retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
-    // AccRej
-    acceptUniform = gsl_rng_uniform(gslrng);
-    printf("%.3f < %.3f\t",acceptUniform, acceptlevel);
-    if (acceptUniform < acceptlevel) {
-      printf("YES\n");
-      for (int i = 0; i < dim; i++) { thetaCurr[i] = thetaCan[i]; }
-      posteriorCurr = posteriorCan;
-    } else {
-      printf("no\n");
-    }
+    // // Posterior
+    // retval = getPosterior(thetaCan, dim, &posteriorCan);
+    // // Akzeptanzlevel
+    // retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
+    // // AccRej
+    // acceptUniform = gsl_rng_uniform(gslrng);
+    // printf("%.3f < %.3f\t",acceptUniform, acceptlevel);
+    // if (acceptUniform < acceptlevel) {
+    //   printf("YES\n");
+    //   for (int i = 0; i < dim; i++) { thetaCurr[i] = thetaCan[i]; }
+    //   posteriorCurr = posteriorCan;
+    // } else {
+    //   printf("no\n");
+    // }
   }
 
   // free memory
-  free(thetaCan);
-  free(thetaCurr);
+  gsl_vector_free(thetaCanV);
+  gsl_vector_free(thetaCurrV);
   gsl_rng_free(gslrng);
   // close MPI
   MPI_Barrier(MPI_COMM_WORLD);
