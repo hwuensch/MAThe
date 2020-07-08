@@ -7,16 +7,13 @@
 #include <gsl/gsl_randist.h>
 #include <mcmcNormal.h>
 
-#define PROP 1
-#define POST 2
-
 int main(int argc,char *argv[])
 {
   int retval;
   int iterAll, iterJ, dimension;
   int world_rank, world_size;
   double starttime_setup;
-  double startvalue;
+  double startvalue, proposalType;
   double posteriorCurr, posteriorCan, qCurr, qCan;
   gsl_vector *thetaCanV, *thetaCurrV;
   double acceptlevel, acceptUniform;
@@ -55,10 +52,17 @@ int main(int argc,char *argv[])
     printf("No startvalue 'start' is defined. We work with start=2.0.\n");
     startvalue = 2.0;
   }
+  // proposal
+  if (argc>4) {
+    proposalType = atof(argv[4]);
+  } else {
+    printf("No value for type of proposal 'prop' is defined. We work with prop=0.4.\n");
+    proposalType = 0.4;
+  }
 
   /* output file */
   sprintf(filename_open,"");
-  sprintf(filename_open,"../output/iter%d_dim%d_start%g_rank%d.txt",iterAll,dimension,startvalue,world_rank);
+  sprintf(filename_open,"../output/iter%d_dim%d_start%g_prop%d_rank%d.txt",iterAll,dimension,startvalue,(int) (proposalType*100),world_rank);
   fileChain=fopen(filename_open,"w");
   if (fileChain==NULL) {
     perror("Failed open");
@@ -83,9 +87,10 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   // loop
   for (iterJ = 0; iterJ < iterAll; iterJ++) {
-    for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
+    // for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
+    retval = writeToFile(fileChain, thetaCurrV);
     // Proposal
-    retval = getProposal(gslrng, dimension, thetaCurrV, thetaCanV, &qCurr, &qCan);
+    retval = getProposal(gslrng, proposalType, dimension, thetaCurrV, thetaCanV, &qCurr, &qCan);
     for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCanV,i)); }
 
     // Posterior

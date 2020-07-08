@@ -1,9 +1,10 @@
 iterAll    = 1000;
 dimension  = 3;
 startvalue = 3;
+proptype   = 60;
 world_rank = 0;
 %%
-filename = sprintf('iter%d_dim%d_start%d_rank%d.txt',iterAll,dimension,startvalue,world_rank)
+filename = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,world_rank)
 fileLog  = importfileInfo(filename, dimension);
 
 %%

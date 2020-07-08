@@ -11,24 +11,21 @@
 // #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_linalg.h>
 
-#define PROP 1
-#define POST 2
+#define PROP 1.0
+#define POST 2.0
 
 /******************************************************************************/
 
-int getKovMat(gsl_matrix* KovMat, int type, int dimension){
+int getKovMat(gsl_matrix* KovMat, double type, int dimension){
   double inhalt;
 
   // Inhalt fuer KovMat festlegen
-  switch (type) {
-    case PROP:
-      inhalt = pow(0.4,2);
-      break;
-    case POST:
-      inhalt = pow(1.0,2);
-      break;
-    default: return(1); break;
+  if (type == POST) {
+    inhalt = pow(1.0,2);
+  } else {
+    inhalt = pow(type,2);
   }
+
   // Kovarianzmatrix befuellen
   for (int i = 0; i < dimension; i++) {
     gsl_matrix_set(KovMat, i, i, inhalt);
@@ -39,7 +36,7 @@ int getKovMat(gsl_matrix* KovMat, int type, int dimension){
 
 /******************************************************************************/
 
-int getProposal(const gsl_rng* gslrng, int dimension, gsl_vector* thetaCurrV, gsl_vector* thetaCanV, double* qCurr, double* qCan){
+int getProposal(const gsl_rng* gslrng, double proposalType, int dimension, gsl_vector* thetaCurrV, gsl_vector* thetaCanV, double* qCurr, double* qCan){
   // Proposal ist Random Walk um die aktuelle Position.
   // Die einzelnen Einträge sind unabhängig voneinander; können sie also einzeln würfeln.
   //
@@ -51,7 +48,7 @@ int getProposal(const gsl_rng* gslrng, int dimension, gsl_vector* thetaCurrV, gs
 
   workspace = gsl_vector_calloc(dimension);
   KovMatProposalCholesky = gsl_matrix_calloc(dimension,dimension);
-  retval = getKovMat(KovMatProposalCholesky, PROP, dimension);
+  retval = getKovMat(KovMatProposalCholesky, proposalType, dimension);
 
   // Kandidaten wuerfeln:
   /* via gsl:
@@ -109,7 +106,6 @@ int getStarted(double startvalue, int dimension, gsl_vector* thetaV, double* pos
 /******************************************************************************/
 
 int getAcceptancelevel(double* posteriorCan, double* posteriorCurr, double* qCan, double* qCurr, double* acceptlevel){
-  int retval;
 
   *acceptlevel = *posteriorCan * *qCan / *posteriorCurr / *qCurr;
 
@@ -125,6 +121,20 @@ long getSeed(){
 
     gettimeofday(&timevalue, 0);
     return(timevalue.tv_sec + timevalue.tv_usec);
+}
+
+/******************************************************************************/
+
+int writeToFile(FILE* file, const gsl_vector* vector){
+  int dimension;
+
+  dimension = vector->size;
+
+  for (int i = 0; i < dimension; i++){
+    fprintf(file,"%.4e\t",gsl_vector_get(vector,i));
+  }
+  
+  return(0);
 }
 
 /******************************************************************************/

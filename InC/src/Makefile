@@ -63,9 +63,14 @@ all: mcmcNormalMain
 run: mcmcNormal_run
 
 # ----------------------------------------------------------------------------------------
+# standardvalues:
+iterAll = 100
+dim = 2
+start = 1
+prop = 0.4
 
 mcmcNormal_run: mcmcNormalMain
-	mpirun --oversubscribe -n $(nProc) ./mcmcNormalMain $(iterAll) $(dim) $(start) # $(swaps) $(seed) $(mChainsBool) $(bPR)
+	mpirun --oversubscribe -n $(nProc) ./mcmcNormalMain $(iterAll) $(dim) $(start) $(prop) # $(swaps) $(seed) $(mChainsBool) $(bPR)
 mcmcNormalMain: obj/mcmcNormalMain.o ${OBJECTS_DEPENDENCIES_C}
 	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${INCLUDES} ${LIB_DIR} ${LIBRARIES} ${LINKFLAGS}
 
