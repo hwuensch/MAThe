@@ -1,37 +1,43 @@
 iterAll    = 1000;
-dimension  = 3;
+dimension  = 2;
 startvalue = 3;
+proptype   = 60;
 world_rank = 0;
 %%
-filename = sprintf('iter%d_dim%d_start%d_rank%d.txt',iterAll,dimension,startvalue,world_rank)
-fileLog = importfileLog(filename, dimension);
+filename = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
+fileLog  = importfileInfo(filename, dimension);
 
 %%
 close all
-if dimension > 2
+if dimension > 1
     n = 100;
     x = linspace(min(fileLog(:,1)),max(fileLog(:,1)),n);
     y = linspace(min(fileLog(:,2)),max(fileLog(:,2)),n);
     [X,Y] = meshgrid(x,y);
-    xx = reshape(X,[],1);
-    yy = reshape(Y,[],1);
-    Z = reshape(mvnpdf([xx yy]),n,n);
+    Z = reshape(mvnpdf([reshape(X,[],1) reshape(Y,[],1)]),n,n);
     
+    ctr = 1;
     figure
     hold on
-    scatter(fileLog(:,1),fileLog(:,2))
-    contour3(X,Y,Z)
+    scatter(fileLog(:,1),fileLog(:,2)); scatterAll=ctr; ctr=ctr+1;
+    scatter(fileLog(1,1),fileLog(1,2),'filled'); scatterStart=ctr; ctr=ctr+1; 
+    contour3(X,Y,Z); contour2D=ctr; ctr=ctr+1;
     grid on
+    ax = gca;
+    ax.FontWeight = 'bold'; ax.FontSize = 20;
+    ax.Children(cont).LineWidth = 2.5;
+    ax.Children(3).Marker = '+'; ax.Children(3).LineWidth = 1.5; ax.Children(3).DisplayName = 'Markovkette';
 end
 %%
-figure
+fig = figure;
+fig.WindowState = 'maximized';
 for d=1:dimension
     subplot(dimension,1,d)
-    p = plot(fileLog(:,d))
+    p = plot(fileLog(:,d));
     grid on
     ax = gca;
     ax.XLim = [0 size(fileLog,1)];
-    ax.FontWeight = 'bold'; ax.Font
+    ax.FontWeight = 'bold'; ax.FontSize = 15;
     ax.Children.LineWidth = 2;
 end
 %%

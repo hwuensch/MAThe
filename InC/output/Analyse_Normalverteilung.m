@@ -1,26 +1,35 @@
 iterAll    = 1000;
-dimension  = 3;
+dimension  = 2;
 startvalue = 3;
 proptype   = 60;
 world_rank = 0;
 %%
-filename = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,world_rank)
+filename = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
 fileLog  = importfileInfo(filename, dimension);
 
 %%
 close all
-if dimension > 2
+if dimension > 1
     n = 100;
     x = linspace(min(fileLog(:,1)),max(fileLog(:,1)),n);
     y = linspace(min(fileLog(:,2)),max(fileLog(:,2)),n);
     [X,Y] = meshgrid(x,y);
     Z = reshape(mvnpdf([reshape(X,[],1) reshape(Y,[],1)]),n,n);
     
+    ctr = 1;
     figure
     hold on
-    scatter(fileLog(:,1),fileLog(:,2))
-    contour3(X,Y,Z)
+    contour3(X,Y,Z); contour2D=ctr; ctr=ctr+1;
+    scatter(fileLog(:,1),fileLog(:,2)); scatterAll=ctr; ctr=ctr+1;
+    scatter(fileLog(1,1),fileLog(1,2)); scatterStart=ctr; ctr=ctr+1; 
     grid on
+    xlabel('x_1'); ylabel('x_2'); zlabel('p(x)');
+    ax = gca;
+    ax.FontWeight = 'bold'; ax.FontSize = 20;
+    ax.Children(ctr-contour2D).LineWidth = 2.5; ax.Children(ctr-contour2D).DisplayName = 'Zielverteilung';
+    ax.Children(ctr-scatterAll).Marker = '+'; ax.Children(ctr-scatterAll).LineWidth = 1.5; ax.Children(ctr-scatterAll).DisplayName = 'Markovkette';
+    ax.Children(ctr-scatterStart).LineWidth = 2; ax.Children(ctr-scatterStart).DisplayName = 'Startpunkt';
+    legend('Location','northwest')
 end
 %%
 fig = figure;
