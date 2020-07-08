@@ -1,0 +1,21 @@
+iterAll    = 500;
+dimension  = 2;
+startvalue = 3;
+world_rank = 0;
+%%
+filename = sprintf('iter%d_dim%d_start%d_rank%d.txt',iterAll,dimension,startvalue,world_rank)
+fileLog = importfileLog(filename, dimension);
+
+%%
+x = linspace(min(fileLog(:,1)),max(fileLog(:,1)));
+y = linspace(min(fileLog(:,2)),max(fileLog(:,2)));
+[X,Y] = meshgrid(x,y);
+xx = reshape(X,[],1);
+yy 
+Z = mvnpdf([x;y]');
+contour(X,Y,Z)
+
+figure
+scatter(fileLog(:,1),fileLog(:,2))
+
+%%
