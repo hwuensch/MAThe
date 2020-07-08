@@ -64,7 +64,7 @@ int getProposal(const gsl_rng* gslrng, int dimension, gsl_vector* thetaCurrV, gs
   // Wahrscheinlichkeiten qCurr und qCan berechnen:
   retval = gsl_ran_multivariate_gaussian_pdf(thetaCanV, thetaCurrV, KovMatProposalCholesky, qCan, workspace);
   retval = gsl_ran_multivariate_gaussian_pdf(thetaCurrV, thetaCanV, KovMatProposalCholesky, qCurr, workspace);
-  
+
   gsl_vector_free(workspace);
   gsl_matrix_free(KovMatProposalCholesky);
   return(0);

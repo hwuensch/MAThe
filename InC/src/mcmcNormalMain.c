@@ -78,20 +78,22 @@ int main(int argc,char *argv[])
     retval = getProposal(gslrng, dimension, thetaCurrV, thetaCanV, &qCurr, &qCan);
     printf("candid_%3d\t",iterJ); for (int i = 0; i < dimension; i++) { printf("%.2f\t",gsl_vector_get(thetaCanV,i)); }
 
-    // // Posterior
-    // retval = getPosterior(thetaCan, dim, &posteriorCan);
-    // // Akzeptanzlevel
-    // retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
-    // // AccRej
-    // acceptUniform = gsl_rng_uniform(gslrng);
-    // printf("%.3f < %.3f\t",acceptUniform, acceptlevel);
+    // Posterior
+    retval = getPosterior(thetaCanV, dimension, &posteriorCan);
+    printf("%.2e\t%.3f\t%.2e\t%.3f\t", posteriorCan, qCurr, posteriorCurr, qCan);
+    // Akzeptanzlevel
+    retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
+    // AccRej
+    acceptUniform = gsl_rng_uniform(gslrng);
+    printf("%.3f\t>\t%.3f\t", acceptlevel, acceptUniform);
     // if (acceptUniform < acceptlevel) {
-    //   printf("YES\n");
+    //   printf("YES\t");
     //   for (int i = 0; i < dim; i++) { thetaCurr[i] = thetaCan[i]; }
     //   posteriorCurr = posteriorCan;
     // } else {
-    //   printf("no\n");
+    //   printf("no\t");
     // }
+    printf("\n");
   }
 
   // free memory
