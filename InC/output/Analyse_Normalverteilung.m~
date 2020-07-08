@@ -1,5 +1,5 @@
-iterAll    = 500;
-dimension  = 2;
+iterAll    = 1000;
+dimension  = 3;
 startvalue = 3;
 world_rank = 0;
 %%
@@ -7,15 +7,31 @@ filename = sprintf('iter%d_dim%d_start%d_rank%d.txt',iterAll,dimension,startvalu
 fileLog = importfileLog(filename, dimension);
 
 %%
-x = linspace(min(fileLog(:,1)),max(fileLog(:,1)));
-y = linspace(min(fileLog(:,2)),max(fileLog(:,2)));
-[X,Y] = meshgrid(x,y);
-xx = reshape(X,[],1);
-yy 
-Z = mvnpdf([x;y]');
-contour(X,Y,Z)
-
+close all
+if dimension > 2
+    n = 100;
+    x = linspace(min(fileLog(:,1)),max(fileLog(:,1)),n);
+    y = linspace(min(fileLog(:,2)),max(fileLog(:,2)),n);
+    [X,Y] = meshgrid(x,y);
+    xx = reshape(X,[],1);
+    yy = reshape(Y,[],1);
+    Z = reshape(mvnpdf([xx yy]),n,n);
+    
+    figure
+    hold on
+    scatter(fileLog(:,1),fileLog(:,2))
+    contour3(X,Y,Z)
+    grid on
+end
+%%
 figure
-scatter(fileLog(:,1),fileLog(:,2))
-
+for d=1:dimension
+    subplot(dimension,1,d)
+    p = plot(fileLog(:,d))
+    grid on
+    ax = gca;
+    ax.XLim = [0 size(fileLog,1)];
+    ax.FontWeight = 'bold'; ax.Font
+    ax.Children.LineWidth = 2;
+end
 %%

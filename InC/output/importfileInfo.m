@@ -1,4 +1,4 @@
-function fileLog = importfileLog(filename, dimension)
+function fileLog = importfileInfo(filename, dimension)
 %IMPORTFILE2 Import data from a text file
 %  ITER500DIM2START3RANK0 = IMPORTFILE2(FILENAME) reads data from text
 %  file FILENAME for the default selection.  Returns the numeric data.

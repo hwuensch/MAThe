@@ -23,7 +23,7 @@ int main(int argc,char *argv[])
   unsigned long seed, acceptrate=0;
   gsl_rng *gslrng;
   char filename_open[100];
-  FILE *fileLog;
+  FILE *fileChain, *fileLog;
 
   // init MPI
   MPI_Init(&argc,&argv);
@@ -59,8 +59,8 @@ int main(int argc,char *argv[])
   /* output file */
   sprintf(filename_open,"");
   sprintf(filename_open,"../output/iter%d_dim%d_start%g_rank%d.txt",iterAll,dimension,startvalue,world_rank);
-  fileLog=fopen(filename_open,"w");
-  if (fileLog==NULL) {
+  fileChain=fopen(filename_open,"w");
+  if (fileChain==NULL) {
     perror("Failed open");
     MPI_Finalize();
     return(1);
@@ -83,32 +83,32 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   // loop
   for (iterJ = 0; iterJ < iterAll; iterJ++) {
-    for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
+    for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
     // Proposal
     retval = getProposal(gslrng, dimension, thetaCurrV, thetaCanV, &qCurr, &qCan);
-    for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.4e\t",gsl_vector_get(thetaCanV,i)); }
+    for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCanV,i)); }
 
     // Posterior
     retval = getPosterior(thetaCanV, dimension, &posteriorCan);
-    fprintf(fileLog,"%.6e\t%.6e\t%.6e\t%.6e\t", posteriorCan, qCurr, posteriorCurr, qCan);
+    fprintf(fileChain,"%.6e\t%.6e\t%.6e\t%.6e\t", posteriorCan, qCurr, posteriorCurr, qCan);
     // Akzeptanzlevel
     retval =  getAcceptancelevel(&posteriorCan, &posteriorCurr, &qCan, &qCurr, &acceptlevel);
     // AccRej
     acceptUniform = gsl_rng_uniform(gslrng);
-    fprintf(fileLog,"%.6e\t%.6e\t", acceptlevel, acceptUniform);
+    fprintf(fileChain,"%.6e\t%.6e\t", acceptlevel, acceptUniform);
     if (acceptUniform < acceptlevel) {
-      fprintf(fileLog,"1\t");
+      fprintf(fileChain,"1\t");
       acceptrate++;
       retval = gsl_vector_memcpy(thetaCurrV, thetaCanV);
       posteriorCurr = posteriorCan;
     } else {
-      fprintf(fileLog,"0\t");
+      fprintf(fileChain,"0\t");
     }
-    fprintf(fileLog,"\n");
+    fprintf(fileChain,"\n");
   }
-  for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
-  fprintf(fileLog,"\t\t\t\t\t\t\t\t\t%.4f",(double)acceptrate/iterAll);
-  fprintf(fileLog,"\n");
+  for (int i = 0; i < dimension; i++) { fprintf(fileChain,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
+  fprintf(fileChain,"\t\t\t\t\t\t\t\t\t%.4f",(double)acceptrate/iterAll);
+  fprintf(fileChain,"\n");
 
 
   // free memory
