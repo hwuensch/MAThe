@@ -39,63 +39,34 @@ int getKovMat(gsl_matrix* KovMat, int type, int dimension){
 
 /******************************************************************************/
 
-int getProposal(const gsl_rng* gslrng, int dimension, gsl_vector* thetaCurr, gsl_vector* thetaCan, double* qCurr, double* qCan){
+int getProposal(const gsl_rng* gslrng, int dimension, gsl_vector* thetaCurrV, gsl_vector* thetaCanV, double* qCurr, double* qCan){
   // Proposal ist Random Walk um die aktuelle Position.
   // Die einzelnen Einträge sind unabhängig voneinander; können sie also einzeln würfeln.
   //
   // thetaCan = thetaCurr + sigma * ksi mit ksi = N(0,1).
-  // gsl_rng *gslrng;
+
   int retval;
-  // double nennerCurr, nennerCan;
-  // double *KovMatProposal;
-  //
-  // gsl_vector *thetaCanV, *thetaCurrV;
-  // gsl_matrix *KovMatProposalCholesky;
-  //
-  // thetaCanV  = gsl_vector_calloc(dimension);
-  // thetaCurrV = gsl_vector_calloc(dimension);
-  // for (int i = 0; i < dimension; i++) {
-  //   gsl_vector_set(thetaCurrV, i, thetaCurr[i]);
-  // }
-  //
-  // KovMatProposal = (double *) calloc(dimension, sizeof(double));
-  // retval = getKovMat(KovMatProposal, PROP, dimension);
-  // KovMatProposalCholesky = gsl_matrix_calloc(dimension,dimension);
-  // for (int i = 0; i < dimension; i++) {
-  //   gsl_matrix_set(KovMatProposalCholesky, i, i, KovMatProposal[i]);
-  // }
-  //
-  // // Kandidaten wuerfeln:
-  // /* via gsl:
-  //  * int gsl_linalg_cholesky_decomp1(gsl_matrix * A) -> Error GSL_EDOM, falls nicht positiv definit
-  //  * int gsl_ran_multivariate_gaussian(const gsl_rng * r, const gsl_vector * mu, const gsl_matrix * L, gsl_vector * result)
-  //  */
-  // retval = gsl_linalg_cholesky_decomp1(KovMatProposalCholesky);
-  // if (retval == GSL_EDOM) { printf("KovMat der Proposal ist nicht spd!\n");}
-  // retval = gsl_ran_multivariate_gaussian(gslrng, thetaCurrV, KovMatProposalCholesky, thetaCanV);
-  //
-  // // Da ich einen Random Walk ohne Kovarianzen mache, kann ich jeden Eintrag
-  // // einzeln wuerfeln.
-  // for (int i = 0; i < dimension; i++) {
-  //   thetaCan[i] = thetaCurr[i] + sqrt(KovMatProposal[i]) * gsl_ran_gaussian(gslrng,1.0);
-  // }
-  //
-  // // Wahrscheinlichkeiten qCurr und qCan berechnen:
-  // // Kovarianzmatrix ist diagonal -> det(.) ist das Produkt der einzelnen Einträge
-  // nennerCan = 1.0; nennerCurr = 1.0; *qCan = 0.0; *qCurr = 0.0;
-  // for (int i = 0; i < dimension; i++) {
-  //   nennerCan  *= 2*M_PI * KovMatProposal[i];
-  //   nennerCurr = nennerCan;
-  //   *qCan      += pow(thetaCan[i] - thetaCurr[i],2) / KovMatProposal[i];
-  //   *qCurr     += pow(thetaCurr[i] - thetaCan[i],2) / KovMatProposal[i];
-  // }
-  // *qCan  = exp(-0.5 * *qCan) / sqrt(nennerCan);
-  // *qCurr = exp(-0.5 * *qCurr) / sqrt(nennerCurr);
-  //
-  // free(KovMatProposal);
-  // gsl_vector_free(thetaCanV);
-  // gsl_vector_free(thetaCurrV);
-  // gsl_matrix_free(KovMatProposalCholesky);
+  gsl_vector *workspace;
+  gsl_matrix *KovMatProposalCholesky;
+
+  workspace = gsl_vector_calloc(dimension);
+  KovMatProposalCholesky = gsl_matrix_calloc(dimension,dimension);
+  retval = getKovMat(KovMatProposalCholesky, PROP, dimension);
+
+  // Kandidaten wuerfeln:
+  /* via gsl:
+   * int gsl_linalg_cholesky_decomp1(gsl_matrix * A) -> Error GSL_EDOM, falls nicht positiv definit
+   * int gsl_ran_multivariate_gaussian(const gsl_rng * r, const gsl_vector * mu, const gsl_matrix * L, gsl_vector * result)
+   */
+  retval = gsl_linalg_cholesky_decomp1(KovMatProposalCholesky);
+  if (retval == GSL_EDOM) { printf("KovMat der Proposal ist nicht spd!\n");}
+  retval = gsl_ran_multivariate_gaussian(gslrng, thetaCurrV, KovMatProposalCholesky, thetaCanV);
+  // Wahrscheinlichkeiten qCurr und qCan berechnen:
+  retval = gsl_ran_multivariate_gaussian_pdf(thetaCanV, thetaCurrV, KovMatProposalCholesky, qCan, workspace);
+  retval = gsl_ran_multivariate_gaussian_pdf(thetaCurrV, thetaCanV, KovMatProposalCholesky, qCurr, workspace);
+  
+  gsl_vector_free(workspace);
+  gsl_matrix_free(KovMatProposalCholesky);
   return(0);
 }
 

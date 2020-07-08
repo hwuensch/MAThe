@@ -17,7 +17,7 @@ int main(int argc,char *argv[])
   int world_rank, world_size;
   double starttime_setup;
   double startvalue;
-  double *thetaCan, *thetaCurr, posteriorCurr, posteriorCan, qCurr, qCan;
+  double posteriorCurr, posteriorCan, qCurr, qCan;
   gsl_vector *thetaCanV, *thetaCurrV;
   double acceptlevel, acceptUniform;
   unsigned long seed;
@@ -63,7 +63,7 @@ int main(int argc,char *argv[])
   gsl_rng_set(gslrng, seed);     // set a different seed for the rng.
 
   // Startpunkt
-  thetaCurrV = gsl_vector_alloc(dimension);
+  thetaCurrV = gsl_vector_calloc(dimension);
   thetaCanV  = gsl_vector_calloc(dimension);
   retval = getStarted(startvalue, dimension, thetaCurrV, &posteriorCurr); // Startpunkt und dessen Werte setzen
   printf("x_0 = (");for (size_t i = 0; i < dimension; i++) {printf("%g\t",gsl_vector_get(thetaCurrV,i));} printf(")\n");
@@ -75,9 +75,8 @@ int main(int argc,char *argv[])
   // loop
   for (int iterJ = 0; iterJ < iterAll; iterJ++) {
     // Proposal
-    // retval = getProposal(gslrng, dim, thetaCurr, thetaCan, &qCurr, &qCan);
-    // printf("candid_%3d\t",iterJ);
-    // for (int i = 0; i < dim; i++) { printf("%.2f\t",thetaCan[i]); }
+    retval = getProposal(gslrng, dimension, thetaCurrV, thetaCanV, &qCurr, &qCan);
+    printf("candid_%3d\t",iterJ); for (int i = 0; i < dimension; i++) { printf("%.2f\t",gsl_vector_get(thetaCanV,i)); }
 
     // // Posterior
     // retval = getPosterior(thetaCan, dim, &posteriorCan);
