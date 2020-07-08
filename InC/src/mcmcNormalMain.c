@@ -20,7 +20,7 @@ int main(int argc,char *argv[])
   double posteriorCurr, posteriorCan, qCurr, qCan;
   gsl_vector *thetaCanV, *thetaCurrV;
   double acceptlevel, acceptUniform;
-  unsigned long seed;
+  unsigned long seed, acceptrate=0;
   gsl_rng *gslrng;
   char filename_open[100];
   FILE *fileLog;
@@ -98,6 +98,7 @@ int main(int argc,char *argv[])
     fprintf(fileLog,"%.6e\t%.6e\t", acceptlevel, acceptUniform);
     if (acceptUniform < acceptlevel) {
       fprintf(fileLog,"1\t");
+      acceptrate++;
       retval = gsl_vector_memcpy(thetaCurrV, thetaCanV);
       posteriorCurr = posteriorCan;
     } else {
@@ -105,7 +106,9 @@ int main(int argc,char *argv[])
     }
     fprintf(fileLog,"\n");
   }
-  for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.6e\t",gsl_vector_get(thetaCurrV,i)); } fprintf(fileLog,"\n");
+  for (int i = 0; i < dimension; i++) { fprintf(fileLog,"%.4e\t",gsl_vector_get(thetaCurrV,i)); }
+  fprintf(fileLog,"\t\t\t\t\t\t\t\t\t%.4f",(double)acceptrate/iterAll);
+  fprintf(fileLog,"\n");
 
 
   // free memory

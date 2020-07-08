@@ -1,5 +1,5 @@
 iterAll    = 1000;
-dimension  = 2;
+dimension  = 3;
 startvalue = 3;
 world_rank = 0;
 %%
@@ -7,6 +7,8 @@ filename = sprintf('iter%d_dim%d_start%d_rank%d.txt',iterAll,dimension,startvalu
 fileLog = importfileLog(filename, dimension);
 
 %%
+close all
+
 n = 100;
 x = linspace(min(fileLog(:,1)),max(fileLog(:,1)),n);
 y = linspace(min(fileLog(:,2)),max(fileLog(:,2)),n);
