@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
-
+#include <mpi.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_rng.h>
@@ -133,8 +133,43 @@ int writeToFile(FILE* file, const gsl_vector* vector){
   for (int i = 0; i < dimension; i++){
     fprintf(file,"%.4e\t",gsl_vector_get(vector,i));
   }
-  
+
   return(0);
+}
+
+/******************************************************************************/
+
+int performSwap(const gsl_rng* gslrng, gsl_vector* thetaCurrV, double* posteriorCurr){
+  // symmetrized Parallel Hierarchical Sampling:
+  // genau zwei Ketten tauschen ihre aktuelle Position in jeder Iteration,
+  // anstatt zu samplen.
+  int world_rank, world_size, swap[2], dimension, tag=42, retval=0;
+  MPI_Status status;
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&world_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&world_size);
+  dimension = thetaCurrV->size;
+
+  if (world_rank==0) {
+    swap[0] = gsl_rng_uniform_int(gslrng, world_size);
+    swap[1] = gsl_rng_uniform_int(gslrng, world_size-1);
+    if (swap[1] >= swap[0]) {
+      // swap[1] wurde aus einer Zahl weniger gezogen -> korrekte Position muss evtl angepasst werden.
+      swap[1]++;
+    }
+  }
+  MPI_Bcast(swap,2,MPI_INT,0,MPI_COMM_WORLD);
+
+  if (swap[0]==world_rank) {
+    MPI_Sendrecv_replace(thetaCurrV->data,dimension,MPI_DOUBLE,swap[1],tag,swap[1],tag,MPI_COMM_WORLD,&status);
+    MPI_Sendrecv_replace(posteriorCurr,1,MPI_DOUBLE,swap[1],tag,swap[1],tag,MPI_COMM_WORLD,&status);
+    retval = 1;
+  } else if (swap[1]==world_rank) {
+    MPI_Sendrecv_replace(thetaCurrV->data,dimension,MPI_DOUBLE,swap[0],tag,swap[0],tag,MPI_COMM_WORLD,&status);
+    MPI_Sendrecv_replace(posteriorCurr,1,MPI_DOUBLE,swap[0],tag,swap[0],tag,MPI_COMM_WORLD,&status);
+    retval = 1;
+  }
+  return retval;
 }
 
 /******************************************************************************/

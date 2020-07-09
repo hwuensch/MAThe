@@ -1,4 +1,4 @@
-iterAll    = 1000;
+iterAll    = 10;
 dimension  = 2;
 startvalue = 3;
 proptype   = 80;
@@ -34,26 +34,46 @@ if dimension > 1
     legend('Location','northwest')
 end
 %% einzelne Markovketten als subplot
+% fig = figure;
+% % fig.WindowState = 'maximized';
+% for d=1:dimension
+%     subplot(dimension,1,d)
+%     p = plot(fileLog(:,d));
+%     grid on
+%     ax = gca;
+%     ax.XLim = [0 size(fileLog,1)];
+%     ax.FontWeight = 'bold'; ax.FontSize = FontSize;
+%     ax.Children.LineWidth = 2;
+% end
+% %% einzelne Histogramme
+% nBins = 40;
+% for d=1:dimension
+%     fig = figure;
+%     histfit(fileLog(:,d),nBins,'kernel');
+%     xlabel(sprintf('x_%d',d));
+%     grid on;
+%     ax = gca;
+%     ax.FontWeight = 'bold'; ax.FontSize = FontSize;
+% end
+%% Markovketten und Histfit nebeneinander in einem figure
+nBins = 40;
 fig = figure;
 fig.WindowState = 'maximized';
 for d=1:dimension
-    subplot(dimension,1,d)
-    p = plot(fileLog(:,d));
+    subplot(dimension,2,2*d-1)
+    p = plot(fileLog(:,d),'x-');
+    xlabel('Iteration'); ylabel(sprintf('x_%d',d));
     grid on
     ax = gca;
     ax.XLim = [0 size(fileLog,1)];
     ax.FontWeight = 'bold'; ax.FontSize = FontSize;
     ax.Children.LineWidth = 2;
-end
-%% einzelne Histogramme
-nBins = 40;
-for d=1:dimension
-    fig = figure;
+    
+    subplot(dimension,2,2*d)
     histfit(fileLog(:,d),nBins,'kernel');
-    xlabel(sprintf('x_%d',d));
+    xlabel(sprintf('x_%d',d)); ylabel(sprintf('p(x_%d)',d));
     grid on;
-    ax = gca;
-    ax.FontWeight = 'bold'; ax.FontSize = FontSize;
+    axh = gca;
+    axh.FontWeight = 'bold'; axh.FontSize = FontSize;
 end
-
 %%
