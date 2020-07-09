@@ -1,11 +1,11 @@
-iterAll    = 10;
-dimension  = 2;
+iterAll    = 10000;
+dimension  = 20;
 startvalue = 3;
-proptype   = 80;
+proptype   = 40;
 world_rank = 0;
 %%
-filename = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
-fileLog  = importfileInfo(filename, dimension);
+filename  = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
+fileChain = importfileInfo(filename, dimension);
 
 %% plots
 FontSize = 20;
@@ -13,8 +13,8 @@ FontSize = 20;
 close all
 if dimension > 1
     n = 100;
-    x = linspace(min(fileLog(:,1)),max(fileLog(:,1)),n);
-    y = linspace(min(fileLog(:,2)),max(fileLog(:,2)),n);
+    x = linspace(min(fileChain(:,1)),max(fileChain(:,1)),n);
+    y = linspace(min(fileChain(:,2)),max(fileChain(:,2)),n);
     [X,Y] = meshgrid(x,y);
     Z = reshape(mvnpdf([reshape(X,[],1) reshape(Y,[],1)]),n,n);
     
@@ -22,8 +22,8 @@ if dimension > 1
     figure
     hold on
     contour3(X,Y,Z); contour2D=ctr; ctr=ctr+1;
-    scatter(fileLog(:,1),fileLog(:,2)); scatterAll=ctr; ctr=ctr+1;
-    scatter(fileLog(1,1),fileLog(1,2)); scatterStart=ctr; ctr=ctr+1; 
+    scatter(fileChain(:,1),fileChain(:,2)); scatterAll=ctr; ctr=ctr+1;
+    scatter(fileChain(1,1),fileChain(1,2)); scatterStart=ctr; ctr=ctr+1; 
     grid on
     xlabel('x_1'); ylabel('x_2'); zlabel('p(x)');
     ax = gca;
@@ -60,20 +60,28 @@ nBins = 40;
 fig = figure;
 fig.WindowState = 'maximized';
 for d=1:dimension
-    subplot(dimension,2,2*d-1)
-    p = plot(fileLog(:,d),'x-');
-    xlabel('Iteration'); ylabel(sprintf('x_%d',d));
-    grid on
-    ax = gca;
-    ax.XLim = [0 size(fileLog,1)];
-    ax.FontWeight = 'bold'; ax.FontSize = FontSize;
-    ax.Children.LineWidth = 2;
+%     subplot(dimension,2,2*d-1)
+%     p = plot(fileChain(:,d),'x-');
+%     xlabel('Iteration'); ylabel(sprintf('x_%d',d));
+%     grid on
+%     ax = gca;
+%     ax.XLim = [0 size(fileChain,1)];
+%     ax.FontWeight = 'bold'; ax.FontSize = FontSize;
+%     ax.Children.LineWidth = 2;
     
     subplot(dimension,2,2*d)
-    histfit(fileLog(:,d),nBins,'kernel');
-    xlabel(sprintf('x_%d',d)); ylabel(sprintf('p(x_%d)',d));
+    histfit(fileChain(:,d),nBins,'kernel');
+%     xlabel(sprintf('x%d',d));
     grid on;
     axh = gca;
     axh.FontWeight = 'bold'; axh.FontSize = FontSize;
 end
+subplot(dimension,2,1:2:2*dimension)
+stackedplot(fileChain(:,1:20))
+grid on
+axst = gca;
+axst.LineWidth = 2; axst.FontSize = FontSize;
+axst.XLabel = 'Iteration';
+% axst.DisplayLabels = {};
+
 %%
