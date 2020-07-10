@@ -7,6 +7,10 @@ world_rank = 0;
 filename  = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
 fileChain = importfileInfo(filename, dimension);
 
+%% ESS
+Kette = fileChain(:,1:dimension)';
+ESS = MCMC_ESS(Kette, iterAll, dimension)
+
 %% plots
 FontSize = 20;
 %% scatter der Kette + contour der Zielverteilung
@@ -77,7 +81,7 @@ for d=1:dimension
     axh.FontWeight = 'bold'; axh.FontSize = FontSize;
 end
 subplot(dimension,2,1:2:2*dimension)
-stackedplot(fileChain(:,1:20))
+st = stackedplot(fileChain(:,1:20));
 grid on
 axst = gca;
 axst.LineWidth = 2; axst.FontSize = FontSize;
