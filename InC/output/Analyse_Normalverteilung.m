@@ -1,6 +1,6 @@
-iterAll    = 100000;
+iterAll    = 5000;
 dimension  = 2;
-startvalue = 3;
+startvalue = 10;
 proptype   = 40;
 world_rank = 0;
 %%
@@ -14,11 +14,13 @@ Kette = fileChain(:,1:dimension);
 ESS = MCMC_ESS(Kette', iterAll, dimension)
 
 %%% Geweke
-% zz=gewekeplot(Kette');
+% [zz,pp]=gewekeplot(Kette);
 [z,p] = geweke(Kette)
 
 %%% Gelman-Rubin Factor (Potential Scale Reduction Factor)
-[R,neff,V,W,B] = psrf(Kette)
+[R,neff,V,W,B] = psrf(Kette);
+R
+neff
 %% plots
 FontSize = 20;
 %%% scatter der Kette + contour der Zielverteilung
