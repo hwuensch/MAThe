@@ -1,5 +1,5 @@
-iterAll    = 10000;
-dimension  = 20;
+iterAll    = 100000;
+dimension  = 2;
 startvalue = 3;
 proptype   = 40;
 world_rank = 0;
@@ -7,13 +7,21 @@ world_rank = 0;
 filename  = sprintf('iter%d_dim%d_start%d_prop%d_rank%d.txt',iterAll,dimension,startvalue,proptype,world_rank)
 fileChain = importfileInfo(filename, dimension);
 
-%% ESS
-Kette = fileChain(:,1:dimension)';
-ESS = MCMC_ESS(Kette, iterAll, dimension)
+%% Diagnosen
+Kette = fileChain(:,1:dimension);
 
+%%% ESS
+ESS = MCMC_ESS(Kette', iterAll, dimension)
+
+%%% Geweke
+% zz=gewekeplot(Kette');
+[z,p] = geweke(Kette)
+
+%%% Gelman-Rubin Factor (Potential Scale Reduction Factor)
+[R,neff,V,W,B] = psrf(Kette)
 %% plots
 FontSize = 20;
-%% scatter der Kette + contour der Zielverteilung
+%%% scatter der Kette + contour der Zielverteilung
 close all
 if dimension > 1
     n = 100;
@@ -37,7 +45,7 @@ if dimension > 1
     ax.Children(ctr-scatterStart).LineWidth = 2; ax.Children(ctr-scatterStart).DisplayName = 'Startpunkt';
     legend('Location','northwest')
 end
-%% einzelne Markovketten als subplot
+%%% einzelne Markovketten als subplot
 % fig = figure;
 % % fig.WindowState = 'maximized';
 % for d=1:dimension
@@ -59,7 +67,8 @@ end
 %     ax = gca;
 %     ax.FontWeight = 'bold'; ax.FontSize = FontSize;
 % end
-%% Markovketten und Histfit nebeneinander in einem figure
+
+%%% Markovketten und Histfit nebeneinander in einem figure
 nBins = 40;
 fig = figure;
 fig.WindowState = 'maximized';
@@ -81,7 +90,7 @@ for d=1:dimension
     axh.FontWeight = 'bold'; axh.FontSize = FontSize;
 end
 subplot(dimension,2,1:2:2*dimension)
-st = stackedplot(fileChain(:,1:20));
+st = stackedplot(fileChain(:,1:dimension));
 grid on
 axst = gca;
 axst.LineWidth = 2; axst.FontSize = FontSize;
