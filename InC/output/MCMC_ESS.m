@@ -1,4 +1,4 @@
-function ESS = MCMC_ESS(Kette,iterAll,dimension)
+function ESS_dim = MCMC_ESS(Kette,iterAll,dimension)
 %% nach Schmidl et. al, 2013, S. 9
 % 
 % Kette kann mehrdimensional sein:
@@ -43,5 +43,5 @@ end
 ESS_dim = 1 + 2 * ESS_dim;
 ESS_dim = (iterAll + 1) ./ ESS_dim;
 
-ESS = max(ESS_dim);
+% ESS = max(ESS_dim);
 end

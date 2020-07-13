@@ -21,6 +21,19 @@ ESS = MCMC_ESS(Kette', iterAll, dimension)
 [R,neff,V,W,B] = psrf(Kette);
 R
 neff
+
+%% #Iterationen bis Konvergenz also R<1.1 ist
+Rhat=nan(iterAll,dimension);
+tstart = 10;
+for t=tstart:iterAll+1
+    Rhat(t,:) = psrf(Kette(1:t,:));
+end
+figure;
+semilogy(Rhat);
+hold on
+line([tstart iterAll+1],[1.1 1.1],'Color','#000000')
+grid on
+
 %% plots
 FontSize = 20;
 %%% scatter der Kette + contour der Zielverteilung
