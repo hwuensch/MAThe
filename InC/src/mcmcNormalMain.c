@@ -4,6 +4,7 @@
 #include <math.h>
 #include <mpi.h>
 #include <gsl/gsl_rng.h>
+#include <gsl-sprng.h>
 #include <gsl/gsl_randist.h>
 #include <mcmcNormal.h>
 
@@ -12,7 +13,7 @@ int main(int argc,char *argv[])
   int retval;
   int iterAll, iterJ, dimension, swapBool, didSwap=0;
   int world_rank, world_size;
-  double starttime_setup;
+  double starttime, starttime_Teil;
   double startvalue, proposalType;
   double posteriorCurr, posteriorCan, qCurr, qCan;
   gsl_vector *thetaCanV, *thetaCurrV, *thetaCurrV_recv;
@@ -20,14 +21,14 @@ int main(int argc,char *argv[])
   unsigned long seed, acceptrate=0;
   gsl_rng *gslrng;
   char filename_open[100];
-  FILE *fileChain;
+  FILE *fileChain, *fileTimes;
 
   // init MPI
   MPI_Init(&argc,&argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&world_rank);
   MPI_Comm_size(MPI_COMM_WORLD,&world_size);
 
-  // starttime_setup = MPI_Wtime();
+  starttime = MPI_Wtime(); // setup
 
   /* get inputs */
   // Constant for MCMC loop
@@ -74,9 +75,18 @@ int main(int argc,char *argv[])
 
   /* output file */
   sprintf(filename_open,"");
-  sprintf(filename_open,"../output/iter%d_dim%d_start%g_prop%d_rank%d.txt",iterAll,dimension,startvalue,(int) (proposalType*100),world_rank);
+  sprintf(filename_open,"../output/iter%d_dim%d_start%g_prop%d_swap%d_rank%d.txt",iterAll,dimension,startvalue,(int) (proposalType*100),swapBool,world_rank);
   fileChain=fopen(filename_open,"w");
   if (fileChain==NULL) {
+    perror("Failed open");
+    MPI_Finalize();
+    return(1);
+  }
+  /* output file */
+  sprintf(filename_open,"");
+  sprintf(filename_open,"../output/iter%d_dim%d_start%g_prop%d_swap%d_rank%d_times.txt",iterAll,dimension,startvalue,(int) (proposalType*100),swapBool,world_rank);
+  fileTimes=fopen(filename_open,"w");
+  if (fileTimes==NULL) {
     perror("Failed open");
     MPI_Finalize();
     return(1);
@@ -85,7 +95,8 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   /****************************************************************************/
   // Random number generator initialisieren
-  gslrng = gsl_rng_alloc(gsl_rng_taus2);
+  // gslrng = gsl_rng_alloc(gsl_rng_taus2);
+  gslrng  = gsl_rng_alloc(gsl_rng_sprng20);
   seed   = getSeed();            // get a seed based on current time. default seed = 0.
   gsl_rng_set(gslrng, seed);     // set a different seed for the rng.
 
@@ -93,6 +104,9 @@ int main(int argc,char *argv[])
   thetaCurrV = gsl_vector_calloc(dimension); thetaCurrV_recv = gsl_vector_calloc(dimension);
   thetaCanV  = gsl_vector_calloc(dimension);
   retval = getStarted(startvalue, dimension, thetaCurrV, &posteriorCurr); // Startpunkt und dessen Werte setzen
+
+  starttime_Teil = MPI_Wtime() - starttime; // ende setup
+  fprintf(fileTimes,"%.4e\n",starttime_Teil);
 
   /****************************************************************************/
   /****************************************************************************/
@@ -102,8 +116,14 @@ int main(int argc,char *argv[])
     retval = writeToFile(fileChain, thetaCurrV);
     if (swapBool) {
       // sPHS
+      starttime_Teil = MPI_Wtime();
       didSwap = performSwap(gslrng,thetaCurrV,&posteriorCurr);
+      starttime_Teil = MPI_Wtime() - starttime_Teil;
+      fprintf(fileTimes,"%.4e\n",starttime_Teil);
+    } else {
+      fprintf(fileTimes,"%.4e\n",0.0);
     }
+    starttime_Teil = MPI_Wtime();
     if (didSwap) {
       for (int i = 0; i < dimension; i++) {fprintf(fileChain,"\t");} fprintf(fileChain,"\t\t\t\t\t\t2");
       acceptrate++;
@@ -129,12 +149,16 @@ int main(int argc,char *argv[])
       }
     }
     fprintf(fileChain,"\n");
+    starttime_Teil = MPI_Wtime() - starttime_Teil;
+    fprintf(fileTimes,"%.4e\n",starttime_Teil);
   }
   retval = writeToFile(fileChain, thetaCurrV);
   for (int i = 0; i < dimension; i++) {fprintf(fileChain,"\t");}
   fprintf(fileChain,"\t\t\t\t\t\t%.4f",(double)acceptrate/iterAll);
   fprintf(fileChain,"\n");
 
+  starttime = MPI_Wtime() - starttime;
+  fprintf(fileTimes,"%.4e\n",starttime);
 
   // free memory
   gsl_vector_free(thetaCanV);
@@ -143,6 +167,7 @@ int main(int argc,char *argv[])
   gsl_rng_free(gslrng);
   // close files
   fclose(fileChain);
+  fclose(fileTimes);
   // close MPI
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
