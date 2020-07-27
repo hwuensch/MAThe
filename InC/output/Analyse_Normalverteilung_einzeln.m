@@ -1,4 +1,4 @@
-iterAll    = 1000;
+iterAll    = 10000;
 dimension  = 20;
 startvalue = 0;
 proptype   = 40;
@@ -15,7 +15,7 @@ Kette = fileChain(:,1:dimension);
 Accrate = fileChain(end,end)
 
 %% ESS
-ESS = MCMC_ESS(Kette', iterAll, dimension)
+ESS = round(MCMC_ESS(Kette', iterAll, dimension))
 
 %% Geweke
 [zz,pp]=gewekeplot(Kette);

@@ -7,6 +7,7 @@ world_rank = 0;
 world_size = 10;
 %%
 Ketten  = zeros(iterAll+1,dimension,world_size);
+Ketten2 = zeros(world_size*(iterAll+1),dimension);
 Accrate = zeros(1,world_size);
 ESS     = zeros(dimension,world_size);
 pValue  = zeros(world_size, dimension);
@@ -15,6 +16,7 @@ for rank=0:world_size-1
     fileChain          = importfileInfo(filename, dimension);
     Kette              = fileChain(:,1:dimension);
     Ketten(:,:,rank+1) = Kette;
+    Ketten2(rank*(iterAll+1)+1:(rank+1)*(iterAll+1),:) = Kette;
     
     %%% Akzeptanzrate
     Accrate(1,rank+1)  = fileChain(end,end);
@@ -32,7 +34,7 @@ end
 Accrate
 
 %%% ESS
-minmeanmaxESS = round([min(ESS,[],2) mean(ESS,2) max(ESS,[],2)])
+meanESS = round(MCMC_ESS(Ketten2,(iterAll+1)*world_size,dimension))
 
 %%% Geweke
 pValue
@@ -52,14 +54,16 @@ for t=tstart:tend+1
     end
 end
 if tStop==tstart
-    tStop = t;
+    tStop = t
 end
+
 figure;
 semilogy(Rhat(tstart:tStop,:));
 hold on
 line([tstart tStop],[1.1 1.1],'Color','#000000','DisplayName','Grenze','LineWidth',1.5)
 grid on
 ax = gca;
+ax.XLim = [tstart tStop];
 ax.LineWidth = 1.5; ax.FontSize = 20; ax.FontWeight = 'bold';
 for i=2:dimension+1
     ax.Children(i).DisplayName = sprintf('x %d',dimension+2-i);
