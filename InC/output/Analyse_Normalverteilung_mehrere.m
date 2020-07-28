@@ -11,12 +11,18 @@ Ketten2 = zeros(world_size*(iterAll+1),dimension);
 Accrate = zeros(1,world_size);
 ESS     = zeros(dimension,world_size);
 pValue  = zeros(world_size, dimension);
+Zeiten  = zeros(2*iterAll+2,world_size);
+nSwaps  = zeros(1,world_size);
 for rank=0:world_size-1
     filename           = sprintf('iter%d_dim%d_start%d_prop%d_swap%d_rank%d.txt',iterAll,dimension,startvalue,proptype,swap,rank)
-    fileChain          = importfileInfo(filename, dimension);
+    fileChain          = importfileChain(filename, dimension);
     Kette              = fileChain(:,1:dimension);
     Ketten(:,:,rank+1) = Kette;
     Ketten2(rank*(iterAll+1)+1:(rank+1)*(iterAll+1),:) = Kette;
+    nSwaps(1,rank+1)   = sum(fileChain(:,end)==2);
+    
+    filename         = sprintf('iter%d_dim%d_start%d_prop%d_swap%d_rank%d_times.txt',iterAll,dimension,startvalue,proptype,swap,rank)
+    Zeiten(:,rank+1) = importfileTimes(filename);
     
     %%% Akzeptanzrate
     Accrate(1,rank+1)  = fileChain(end,end);
@@ -30,6 +36,9 @@ for rank=0:world_size-1
 end
 
 %% Diagnosen
+%%% Anzahl Beteiligung swaps
+nSwaps 
+
 %%% Akzeptanzraten
 Accrate
 
@@ -70,4 +79,30 @@ for i=2:dimension+1
     ax.Children(i).LineWidth   = 1.5;
 end
 legend
+%% Zeiten
+overall   = Zeiten(end,:)
+setup     = Zeiten(1,:)
+mcmciters = overall - setup
+
+swaptime  = sum(Zeiten(2:2:end-1,:))
+MHtime    = sum(Zeiten(3:2:end-1,:))
+Rest      = mcmciters - swaptime - MHtime
+
+y = [MHtime; swaptime; setup; Rest]'
+% figure
+ax1 = subplot(1,2,1);
+% ax2 = subplot(1,2,2);
+bplot = bar(y,'stacked');
+grid on
+xlabel('Kette')
+ylabel('Sekunden')
+legend('MH','sPHS','setup','Rest','Location','south','Orientation','horizontal')
+ax = gca;
+ax.FontSize = 20;
+ax.FontWeight = 'bold';
+if swap
+    text(1:length(nSwaps),y(:,1),num2str(nSwaps'),'FontSize',15,'FontWeight','bold','vert','bottom','horiz','center');
+    % box off
+end
 %%
+linkaxes([ax1 ax2],'y')

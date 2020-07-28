@@ -11,9 +11,9 @@
 int main(int argc,char *argv[])
 {
   int retval;
-  int iterAll, iterJ, dimension, swapBool, didSwap=0;
+  int iterAll, iterJ, dimension, swapBool, didSwap=0, nSwaps=0;
   int world_rank, world_size;
-  double starttime, starttime_Teil;
+  double overalltime, starttime_Teil;
   double startvalue, proposalType;
   double posteriorCurr, posteriorCan, qCurr, qCan;
   gsl_vector *thetaCanV, *thetaCurrV, *thetaCurrV_recv;
@@ -28,7 +28,7 @@ int main(int argc,char *argv[])
   MPI_Comm_rank(MPI_COMM_WORLD,&world_rank);
   MPI_Comm_size(MPI_COMM_WORLD,&world_size);
 
-  starttime = MPI_Wtime(); // setup
+  overalltime = MPI_Wtime(); // setup
 
   /* get inputs */
   // Constant for MCMC loop
@@ -105,7 +105,7 @@ int main(int argc,char *argv[])
   thetaCanV  = gsl_vector_calloc(dimension);
   retval = getStarted(startvalue, dimension, thetaCurrV, &posteriorCurr); // Startpunkt und dessen Werte setzen
 
-  starttime_Teil = MPI_Wtime() - starttime; // ende setup
+  starttime_Teil = MPI_Wtime() - overalltime; // ende setup
   fprintf(fileTimes,"%.4e\n",starttime_Teil);
 
   /****************************************************************************/
@@ -113,16 +113,14 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   // loop
   for (iterJ = 0; iterJ < iterAll; iterJ++) {
+    starttime_Teil = MPI_Wtime();
     retval = writeToFile(fileChain, thetaCurrV);
     if (swapBool) {
       // sPHS
-      starttime_Teil = MPI_Wtime();
       didSwap = performSwap(gslrng,thetaCurrV,&posteriorCurr);
-      starttime_Teil = MPI_Wtime() - starttime_Teil;
-      fprintf(fileTimes,"%.4e\n",starttime_Teil);
-    } else {
-      fprintf(fileTimes,"%.4e\n",0.0);
     }
+    starttime_Teil = MPI_Wtime() - starttime_Teil;
+    fprintf(fileTimes,"%.4e\n",starttime_Teil);
     starttime_Teil = MPI_Wtime();
     if (didSwap) {
       for (int i = 0; i < dimension; i++) {fprintf(fileChain,"\t");} fprintf(fileChain,"\t\t\t\t\t\t2");
@@ -157,8 +155,8 @@ int main(int argc,char *argv[])
   fprintf(fileChain,"\t\t\t\t\t\t%.4f",(double)acceptrate/iterAll);
   fprintf(fileChain,"\n");
 
-  starttime = MPI_Wtime() - starttime;
-  fprintf(fileTimes,"%.4e\n",starttime);
+  overalltime = MPI_Wtime() - overalltime;
+  fprintf(fileTimes,"%.4e\n",overalltime);
 
   // free memory
   gsl_vector_free(thetaCanV);
