@@ -58,14 +58,4 @@ for run=1:10
     end
     
 end
-ESSmean = reshape(reshape(round(mean(ESSmeanALL,2)),[],1),20,3)
 %% plot
-close
-figure;
-plot(ESSmean,'LineWidth',2)
-grid on
-ax = gca;
-ax.FontSize = 20; ax.FontWeight = 'bold';
-xlabel('Parameter'); ylabel('ESS')
-% legend('1x10.000','10x1.000 ohne','10x1.000 sPHS','Location','best')
-%%
