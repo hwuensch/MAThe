@@ -2,7 +2,7 @@ iterAll    = 1000;
 dimension  = 20;
 startvalue = 0;
 proptype   = 40;
-swap       = 0;
+swap       = 1;
 world_rank = 0;
 world_size = 10;
 %%
@@ -34,7 +34,6 @@ for rank=0:world_size-1
     % [zz,pp]=gewekeplot(Kette);
     [~,pValue(rank+1,:)] = geweke(Kette);
 end
-
 %% Diagnosen
 %%% Anzahl Beteiligung swaps
 nSwaps 
@@ -89,9 +88,10 @@ MHtime    = sum(Zeiten(3:2:end-1,:))
 Rest      = mcmciters - swaptime - MHtime
 
 y = [MHtime; swaptime; setup; Rest]'
+%%
 % figure
-ax1 = subplot(1,2,1);
-% ax2 = subplot(1,2,2);
+% ax1 = subplot(1,2,1);
+ax2 = subplot(1,2,2);
 bplot = bar(y,'stacked');
 grid on
 xlabel('Kette')
@@ -101,8 +101,22 @@ ax = gca;
 ax.FontSize = 20;
 ax.FontWeight = 'bold';
 if swap
-    text(1:length(nSwaps),y(:,1),num2str(nSwaps'),'FontSize',15,'FontWeight','bold','vert','bottom','horiz','center');
+    text(1:length(nSwaps),y(:,1),num2str(round(nSwaps')),'FontSize',15,'FontWeight','bold','vert','bottom','horiz','center');
     % box off
 end
 %%
 linkaxes([ax1 ax2],'y')
+
+%% Analyse bzgl mehrerer Durchläufe
+% close 
+% i=10;
+% if swap
+%     yysPHS(:,:,i) = y
+%     nSwapssPHS(i,:) = nSwaps
+% else
+%     yy(:,:,i) = y
+% end
+
+% y = mean(yy,3)
+% y = mean(yysPHS,3)
+% nSwaps = mean(nSwapssPHS,1)

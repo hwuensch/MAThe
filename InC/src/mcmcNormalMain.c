@@ -113,13 +113,14 @@ int main(int argc,char *argv[])
   /****************************************************************************/
   // loop
   for (iterJ = 0; iterJ < iterAll; iterJ++) {
-    starttime_Teil = MPI_Wtime();
     retval = writeToFile(fileChain, thetaCurrV);
+    starttime_Teil = 0.0;
     if (swapBool) {
+      starttime_Teil = MPI_Wtime();
       // sPHS
       didSwap = performSwap(gslrng,thetaCurrV,&posteriorCurr);
+      starttime_Teil = MPI_Wtime() - starttime_Teil;
     }
-    starttime_Teil = MPI_Wtime() - starttime_Teil;
     fprintf(fileTimes,"%.4e\n",starttime_Teil);
     starttime_Teil = MPI_Wtime();
     if (didSwap) {

@@ -6,7 +6,7 @@ swap       = 0;
 world_rank = 0;
 %
 filename  = sprintf('iter%d_dim%d_start%d_prop%d_swap%d_rank%d.txt',iterAll,dimension,startvalue,proptype,swap,world_rank)
-fileChain = importfileInfo(filename, dimension);
+fileChain = importfileChain(filename, dimension);
 
 % Diagnosen
 Kette = fileChain(:,1:dimension);
