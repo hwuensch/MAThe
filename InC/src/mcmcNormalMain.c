@@ -11,7 +11,7 @@
 int main(int argc,char *argv[])
 {
   int retval;
-  int iterAll, iterJ, dimension, swapBool, didSwap=0, nSwaps=0;
+  int iterAll, iterJ, dimension, swapBool, didSwap=0, nSwaps=0, ctr;
   int world_rank, world_size;
   double overalltime, starttime_Teil;
   double startvalue, proposalType;
@@ -72,10 +72,16 @@ int main(int argc,char *argv[])
     printf("No value for swapping the chain 'swaps' is defined. We work without swaps; swaps=0.\n");
     swapBool = 0;
   }
+  // nummer durchlauf
+  if (argc>6) {
+    ctr = atoi(argv[6]);
+  } else {
+    ctr = 1;
+  }
 
   /* output file */
   sprintf(filename_open,"");
-  sprintf(filename_open,"../output/iter%d_dim%d_start%g_prop%d_swap%d_rank%d.txt",iterAll,dimension,startvalue,(int) (proposalType*100),swapBool,world_rank);
+  sprintf(filename_open,"../output/%d_iter%d_dim%d_start%g_prop%d_swap%d_rank%d.txt",ctr,iterAll,dimension,startvalue,(int) (proposalType*100),swapBool,world_rank);
   fileChain=fopen(filename_open,"w");
   if (fileChain==NULL) {
     perror("Failed open");
@@ -84,7 +90,7 @@ int main(int argc,char *argv[])
   }
   /* output file */
   sprintf(filename_open,"");
-  sprintf(filename_open,"../output/iter%d_dim%d_start%g_prop%d_swap%d_rank%d_times.txt",iterAll,dimension,startvalue,(int) (proposalType*100),swapBool,world_rank);
+  sprintf(filename_open,"../output/%d_iter%d_dim%d_start%g_prop%d_swap%d_rank%d_times.txt",ctr,iterAll,dimension,startvalue,(int) (proposalType*100),swapBool,world_rank);
   fileTimes=fopen(filename_open,"w");
   if (fileTimes==NULL) {
     perror("Failed open");
@@ -114,14 +120,13 @@ int main(int argc,char *argv[])
   // loop
   for (iterJ = 0; iterJ < iterAll; iterJ++) {
     retval = writeToFile(fileChain, thetaCurrV);
-    starttime_Teil = 0.0;
     if (swapBool) {
-      starttime_Teil = MPI_Wtime();
       // sPHS
-      didSwap = performSwap(gslrng,thetaCurrV,&posteriorCurr);
-      starttime_Teil = MPI_Wtime() - starttime_Teil;
+      didSwap = performSwap(fileTimes, gslrng,thetaCurrV,&posteriorCurr);
+    } else {
+      fprintf(fileTimes,"%.4e\n%.4e\n",0.0,0.0);
     }
-    fprintf(fileTimes,"%.4e\n",starttime_Teil);
+
     starttime_Teil = MPI_Wtime();
     if (didSwap) {
       for (int i = 0; i < dimension; i++) {fprintf(fileChain,"\t");} fprintf(fileChain,"\t\t\t\t\t\t2");

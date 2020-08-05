@@ -139,11 +139,12 @@ int writeToFile(FILE* file, const gsl_vector* vector){
 
 /******************************************************************************/
 
-int performSwap(const gsl_rng* gslrng, gsl_vector* thetaCurrV, double* posteriorCurr){
+int performSwap(FILE* file, const gsl_rng* gslrng, gsl_vector* thetaCurrV, double* posteriorCurr){
   // symmetrized Parallel Hierarchical Sampling:
   // genau zwei Ketten tauschen ihre aktuelle Position in jeder Iteration,
   // anstatt zu samplen.
   int world_rank, world_size, swap[2], dimension, tag=42, retval=0;
+  double starttime;
   MPI_Status status;
 
   MPI_Comm_rank(MPI_COMM_WORLD,&world_rank);
@@ -158,17 +159,27 @@ int performSwap(const gsl_rng* gslrng, gsl_vector* thetaCurrV, double* posterior
       swap[1]++;
     }
   }
+  starttime = MPI_Wtime();
   MPI_Bcast(swap,2,MPI_INT,0,MPI_COMM_WORLD);
+  starttime = MPI_Wtime() - starttime;
+  fprintf(file,"%.4e\n",starttime);
 
+  starttime = 0.0;
   if (swap[0]==world_rank) {
+    starttime = MPI_Wtime();
     MPI_Sendrecv_replace(thetaCurrV->data,dimension,MPI_DOUBLE,swap[1],tag,swap[1],tag,MPI_COMM_WORLD,&status);
     MPI_Sendrecv_replace(posteriorCurr,1,MPI_DOUBLE,swap[1],tag,swap[1],tag,MPI_COMM_WORLD,&status);
     retval = 1;
+    starttime = MPI_Wtime() - starttime;
   } else if (swap[1]==world_rank) {
+    starttime = MPI_Wtime();
     MPI_Sendrecv_replace(thetaCurrV->data,dimension,MPI_DOUBLE,swap[0],tag,swap[0],tag,MPI_COMM_WORLD,&status);
     MPI_Sendrecv_replace(posteriorCurr,1,MPI_DOUBLE,swap[0],tag,swap[0],tag,MPI_COMM_WORLD,&status);
     retval = 1;
+    starttime = MPI_Wtime() - starttime;
   }
+  fprintf(file,"%.4e\n",starttime);
+
   return retval;
 }
 

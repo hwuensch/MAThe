@@ -4,6 +4,7 @@ startvalue = 0;
 proptype   = 40;
 swap       = 0;
 world_rank = 0;
+run        = 1;
 %
 filename  = sprintf('iter%d_dim%d_start%d_prop%d_swap%d_rank%d.txt',iterAll,dimension,startvalue,proptype,swap,world_rank)
 fileChain = importfileChain(filename, dimension);

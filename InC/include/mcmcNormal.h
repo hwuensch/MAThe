@@ -6,4 +6,4 @@ int getStarted(double startvalue, int dimension, gsl_vector* thetaV, double* pos
 int getAcceptancelevel(double* posteriorCan, double* posteriorCurr, double* qCan, double* qCurr, double* acceptlevel);
 long getSeed();
 int writeToFile(FILE* file, const gsl_vector* vector);
-int performSwap(const gsl_rng* gslrng, gsl_vector* thetaCurrV, double* posteriorCurr);
+int performSwap(FILE* file, const gsl_rng* gslrng, gsl_vector* thetaCurrV, double* posteriorCurr);
