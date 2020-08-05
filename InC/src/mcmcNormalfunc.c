@@ -13,6 +13,7 @@
 
 #define PROP 1.0
 #define POST 2.0
+#define POSTZURL 3.0
 
 /******************************************************************************/
 
@@ -21,7 +22,7 @@ int getKovMat(gsl_matrix* KovMat, double type, int dimension){
 
   // Inhalt fuer KovMat festlegen
   if (type == POST) {
-    inhalt = pow(1.0,2);
+    inhalt = 1.0;
   } else {
     inhalt = pow(type,2);
   }
@@ -29,6 +30,20 @@ int getKovMat(gsl_matrix* KovMat, double type, int dimension){
   // Kovarianzmatrix befuellen
   for (int i = 0; i < dimension; i++) {
     gsl_matrix_set(KovMat, i, i, inhalt);
+  }
+
+  if (type == POSTZURL) {
+    gsl_matrix_set(KovMat,0,0,20.0);
+    gsl_matrix_set(KovMat,1,1,1.0);    gsl_matrix_set(KovMat,2,2,2.0);
+    gsl_matrix_set(KovMat,3,3,3.0);    gsl_matrix_set(KovMat,4,4,4.0);
+    gsl_matrix_set(KovMat,5,5,5.0);    gsl_matrix_set(KovMat,6,6,6.0);
+    gsl_matrix_set(KovMat,7,7,7.0);    gsl_matrix_set(KovMat,8,8,8.0);
+    gsl_matrix_set(KovMat,9,9,9.0);    gsl_matrix_set(KovMat,10,10,10.0);
+    gsl_matrix_set(KovMat,11,11,11.0); gsl_matrix_set(KovMat,12,12,12.0);
+    gsl_matrix_set(KovMat,13,13,13.0); gsl_matrix_set(KovMat,14,14,14.0);
+    gsl_matrix_set(KovMat,15,15,15.0); gsl_matrix_set(KovMat,16,16,16.0);
+    gsl_matrix_set(KovMat,17,17,17.0); gsl_matrix_set(KovMat,18,18,18.0);
+    gsl_matrix_set(KovMat,19,19,19.0);
   }
 
   return(0);
@@ -43,13 +58,20 @@ int getProposal(const gsl_rng* gslrng, double proposalType, int dimension, gsl_v
   // thetaCan = thetaCurr + sigma * ksi mit ksi = N(0,1).
 
   int retval;
+  double scale;
   gsl_vector *workspace;
-  gsl_matrix *KovMatProposalCholesky;
+  gsl_matrix *KovMatProposalCholesky, *Id, *KovMatPosterior;
 
   workspace = gsl_vector_calloc(dimension);
   KovMatProposalCholesky = gsl_matrix_calloc(dimension,dimension);
-  retval = getKovMat(KovMatProposalCholesky, proposalType, dimension);
+  Id = gsl_matrix_alloc(dimension,dimension);
+  gsl_matrix_set_identity(Id);
+  KovMatPosterior = gsl_matrix_calloc(dimension,dimension);
 
+  // retval = getKovMat(KovMatProposalCholesky, proposalType, dimension);
+  retval = getKovMat(KovMatPosterior, POSTZURL, dimension);
+  scale = 0.02;
+  retval = gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, scale, KovMatPosterior, Id, 0.0, KovMatProposalCholesky);
   // Kandidaten wuerfeln:
   /* via gsl:
    * int gsl_linalg_cholesky_decomp1(gsl_matrix * A) -> Error GSL_EDOM, falls nicht positiv definit
@@ -64,6 +86,8 @@ int getProposal(const gsl_rng* gslrng, double proposalType, int dimension, gsl_v
 
   gsl_vector_free(workspace);
   gsl_matrix_free(KovMatProposalCholesky);
+  gsl_matrix_free(Id);
+  gsl_matrix_free(KovMatPosterior);
   return(0);
 }
 
@@ -77,7 +101,8 @@ int getPosterior(gsl_vector* thetaV, int dimension, double* posteriorX){
   workspace       = gsl_vector_calloc(dimension); // fuer gaussian_pdf notwendig
   MuPosterior     = gsl_vector_calloc(dimension); // Mittelwertvektor von Zielposterior ist Null
   KovMatPosterior = gsl_matrix_calloc(dimension,dimension);
-  retval = getKovMat(KovMatPosterior, POST, dimension);
+
+  retval = getKovMat(KovMatPosterior, POSTZURL, dimension);
 
   // mehrdimensionale Normalverteilung:
   retval = gsl_linalg_cholesky_decomp1(KovMatPosterior);
