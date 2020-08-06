@@ -33,17 +33,18 @@ int getKovMat(gsl_matrix* KovMat, double type, int dimension){
   }
 
   if (type == POSTZURL) {
-    gsl_matrix_set(KovMat,0,0,20.0);
-    gsl_matrix_set(KovMat,1,1,1.0);    gsl_matrix_set(KovMat,2,2,2.0);
-    gsl_matrix_set(KovMat,3,3,3.0);    gsl_matrix_set(KovMat,4,4,4.0);
-    gsl_matrix_set(KovMat,5,5,5.0);    gsl_matrix_set(KovMat,6,6,6.0);
-    gsl_matrix_set(KovMat,7,7,7.0);    gsl_matrix_set(KovMat,8,8,8.0);
-    gsl_matrix_set(KovMat,9,9,9.0);    gsl_matrix_set(KovMat,10,10,10.0);
-    gsl_matrix_set(KovMat,11,11,11.0); gsl_matrix_set(KovMat,12,12,12.0);
-    gsl_matrix_set(KovMat,13,13,13.0); gsl_matrix_set(KovMat,14,14,14.0);
-    gsl_matrix_set(KovMat,15,15,15.0); gsl_matrix_set(KovMat,16,16,16.0);
-    gsl_matrix_set(KovMat,17,17,17.0); gsl_matrix_set(KovMat,18,18,18.0);
-    gsl_matrix_set(KovMat,19,19,19.0);
+    gsl_matrix_set(KovMat,0,0,0.1219);
+    gsl_matrix_set(KovMat,1,1,0.0862);    gsl_matrix_set(KovMat,2,2,0.0808);
+    gsl_matrix_set(KovMat,3,3,0.5636);    gsl_matrix_set(KovMat,4,4,0.1416);
+    gsl_matrix_set(KovMat,5,5,0.0606);    gsl_matrix_set(KovMat,6,6,0.1484);
+    gsl_matrix_set(KovMat,7,7,0.1349);    gsl_matrix_set(KovMat,8,8,0.1034);
+    gsl_matrix_set(KovMat,9,9,0.0654);    gsl_matrix_set(KovMat,10,10,0.1349);
+    gsl_matrix_set(KovMat,11,11,0.0918); gsl_matrix_set(KovMat,12,12,0.0704);
+    gsl_matrix_set(KovMat,13,13,0.1844); gsl_matrix_set(KovMat,14,14,0.0392);
+    gsl_matrix_set(KovMat,15,15,1.3144); gsl_matrix_set(KovMat,16,16,0.5636);
+    gsl_matrix_set(KovMat,17,17,0.3894); gsl_matrix_set(KovMat,18,18,0.1156);
+    gsl_matrix_set(KovMat,19,19,0.0473);
+    // Parameter 21: 0.0755
   }
 
   return(0);
@@ -68,10 +69,10 @@ int getProposal(const gsl_rng* gslrng, double proposalType, int dimension, gsl_v
   gsl_matrix_set_identity(Id);
   KovMatPosterior = gsl_matrix_calloc(dimension,dimension);
 
-  // retval = getKovMat(KovMatProposalCholesky, proposalType, dimension);
-  retval = getKovMat(KovMatPosterior, POSTZURL, dimension);
-  scale = 0.02;
-  retval = gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, scale, KovMatPosterior, Id, 0.0, KovMatProposalCholesky);
+  retval = getKovMat(KovMatProposalCholesky, proposalType, dimension);
+  // retval = getKovMat(KovMatPosterior, POSTZURL, dimension);
+  // scale = 0.02;
+  // retval = gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, scale, KovMatPosterior, Id, 0.0, KovMatProposalCholesky);
   // Kandidaten wuerfeln:
   /* via gsl:
    * int gsl_linalg_cholesky_decomp1(gsl_matrix * A) -> Error GSL_EDOM, falls nicht positiv definit
@@ -100,6 +101,20 @@ int getPosterior(gsl_vector* thetaV, int dimension, double* posteriorX){
 
   workspace       = gsl_vector_calloc(dimension); // fuer gaussian_pdf notwendig
   MuPosterior     = gsl_vector_calloc(dimension); // Mittelwertvektor von Zielposterior ist Null
+  if (dimension == 20) {
+    int i = 0;
+    gsl_vector_set(MuPosterior,i++,-1.1636); gsl_vector_set(MuPosterior,i++,-3.0880);
+    gsl_vector_set(MuPosterior,i++,4.7718); gsl_vector_set(MuPosterior,i++,0.6621);
+    gsl_vector_set(MuPosterior,i++,7.0193); gsl_vector_set(MuPosterior,i++,6.1393);
+    gsl_vector_set(MuPosterior,i++,-1.1384); gsl_vector_set(MuPosterior,i++,6.0789);
+    gsl_vector_set(MuPosterior,i++,8.6709); gsl_vector_set(MuPosterior,i++,10.7851);
+    gsl_vector_set(MuPosterior,i++,-1.1375); gsl_vector_set(MuPosterior,i++,8.5125);
+    gsl_vector_set(MuPosterior,i++,9.7348); gsl_vector_set(MuPosterior,i++,10.3823);
+    gsl_vector_set(MuPosterior,i++,9.9927); gsl_vector_set(MuPosterior,i++,15.7974);
+    gsl_vector_set(MuPosterior,i++,10.2095); gsl_vector_set(MuPosterior,i++,8.0105);
+    gsl_vector_set(MuPosterior,i++,-4.4559); gsl_vector_set(MuPosterior,i++,-1.8880);
+  }
+  // Parameter 21: -2.0182
   KovMatPosterior = gsl_matrix_calloc(dimension,dimension);
 
   retval = getKovMat(KovMatPosterior, POSTZURL, dimension);
@@ -121,6 +136,20 @@ int getStarted(double startvalue, int dimension, gsl_vector* thetaV, double* pos
 
   for (int i = 0; i < dimension; i++) {
     gsl_vector_set(thetaV, i, startvalue);
+  }
+
+  if (dimension == 20) {
+    int i = 0;
+    gsl_vector_set(thetaV,i++,-1.1636); gsl_vector_set(thetaV,i++,-3.0880);
+    gsl_vector_set(thetaV,i++,4.7718);  gsl_vector_set(thetaV,i++,0.6621);
+    gsl_vector_set(thetaV,i++,7.0193);  gsl_vector_set(thetaV,i++,6.1393);
+    gsl_vector_set(thetaV,i++,-1.1384); gsl_vector_set(thetaV,i++,6.0789);
+    gsl_vector_set(thetaV,i++,8.6709);  gsl_vector_set(thetaV,i++,10.7851);
+    gsl_vector_set(thetaV,i++,-1.1375); gsl_vector_set(thetaV,i++,8.5125);
+    gsl_vector_set(thetaV,i++,9.7348);  gsl_vector_set(thetaV,i++,10.3823);
+    gsl_vector_set(thetaV,i++,9.9927);  gsl_vector_set(thetaV,i++,15.7974);
+    gsl_vector_set(thetaV,i++,10.2095); gsl_vector_set(thetaV,i++,8.0105);
+    gsl_vector_set(thetaV,i++,-4.4559); gsl_vector_set(thetaV,i++,-1.8880);
   }
 
   retval = getPosterior(thetaV, dimension, posterior);

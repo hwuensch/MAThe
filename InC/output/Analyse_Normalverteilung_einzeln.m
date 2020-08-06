@@ -1,7 +1,7 @@
 iterAll    = 10000;
 dimension  = 20;
 startvalue = 0;
-proptype   = 40;
+proptype   = 8;
 swap       = 0;
 world_rank = 0;
 run        = 1;
